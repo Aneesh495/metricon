@@ -1,0 +1,28 @@
+{
+  "name": "@metricon/workbench",
+  "version": "2.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "build": "tsc --noEmit && vite build",
+    "check": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@tanstack/react-query": "5.60.5",
+    "lucide-react": "0.453.0",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "zod": "3.24.2"
+  },
+  "devDependencies": {
+    "@types/react": "18.3.11",
+    "@types/react-dom": "18.3.1",
+    "@vitejs/plugin-react": "^6.1.1",
+    "prettier": "^3.6.2",
+    "typescript": "5.6.3",
+    "vite": "^8.3.1",
+    "vitest": "^5.0.3"
+  }
+}
