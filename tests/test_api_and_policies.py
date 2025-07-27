@@ -34,10 +34,10 @@ def test_api_empty_import_job_and_artifact_contract(tmp_path):
         ).json()
         for _ in range(100):
             result = client.get(f"/api/jobs/{job['id']}").json()
-            if result["status"] in {"succeeded", "failed"}:
+            if result["status"] in {"completed", "failed"}:
                 break
             time.sleep(0.02)
-        assert result["status"] == "succeeded", result
+        assert result["status"] == "completed", result
         dataset = result["result_id"]
         overview = client.get(f"/api/datasets/{dataset}/overview").json()
         assert overview["accuracy"]["n"] == 2
@@ -48,6 +48,17 @@ def test_api_empty_import_job_and_artifact_contract(tmp_path):
         assert client.get("/api/health", headers={"Host": "malicious.example"}).status_code == 400
         invalid = client.get("/api/artifacts/not-real/files/../../catalog.sqlite")
         assert invalid.status_code != 200
+
+
+def test_timestamped_group_api(catalog):
+    demo = demo_workspace(catalog, learners=2, attempts=10)
+    app = create_app(Settings(catalog.root), start_jobs=False)
+    with TestClient(app) as client:
+        response = client.get(
+            f"/api/datasets/{demo['workspace']['dataset_id']}/groups?dimension=learner"
+        )
+        assert response.status_code == 200
+        assert response.json()["rows"][0]["first_timestamp"] is not None
 
 
 def test_planner_unknown_time_not_imputed(catalog):

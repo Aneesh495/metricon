@@ -15,7 +15,7 @@ Canonical schema; streaming adapters; strict validation and quarantine; immutabl
 ## Verified commands
 
 - `ruff check src tests`: passed.
-- `pytest -q`: 47 passed. One upstream Starlette/AnyIO deprecation warning remains visible.
+- `pytest -q`: 50 passed. One upstream Starlette/AnyIO deprecation warning remains visible.
 - `npm run check`: passed strict TypeScript checks.
 - `npm run test:web`: 3 passed.
 - `npm run build`: passed.
@@ -23,10 +23,12 @@ Canonical schema; streaming adapters; strict validation and quarantine; immutabl
 
 EdNet KT1 access was verified against the official Riiid repository and research terms. The deterministic local subset contains 200,653 accepted interactions from 1,268 learners; no import rejection, duplicate, or conflict. A first experiment artifact was published. Its logistic convergence warnings are retained for review; no model-quality claim has been made.
 
+Process tasks now enforce read-only worker metadata, coordinator publication, cooperative cancellation, wall-time termination, and parent-death cleanup. Browser inspection exposed a missing DuckDB timezone dependency; the locked dependency and timestamped API regression now cover it.
+
 ## Incomplete verification
 
-Process worker ownership and wall-time limits; extended simulator regimes; exports and scientific plots; adversarial leakage probes; large ingestion and crash campaigns; benchmark repetitions; browser workflows and screenshots; final public-data comparison; synchronized specifications and runbooks; skeptical review; final acceptance and independent evidence verification.
+extended simulator regimes; exports and scientific plots; adversarial leakage probes; large ingestion and crash campaigns; benchmark repetitions; browser workflows and screenshots; final public-data comparison; synchronized specifications and runbooks; skeptical review; final acceptance and independent evidence verification.
 
 ## Next action
 
-Checkpoint the functioning core, then replace thread execution with process tasks and exercise interrupted publication. Resume from this file and current source. Raw records, generated artifacts, and the private execution ledger are ignored local files.
+Run the extended simulator, independent generated-case campaigns, and scale benchmarks. Resume from this file and current source. Raw records, generated artifacts, and the private execution ledger are ignored local files.

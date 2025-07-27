@@ -56,7 +56,7 @@ export function Jobs({
                   <div>
                     <Tag
                       tone={
-                        job.status === "succeeded"
+                        job.status === "completed"
                           ? "green"
                           : job.status === "failed"
                             ? "rose"
@@ -71,7 +71,7 @@ export function Jobs({
                   <time>{date(job.created_at)}</time>
                 </header>
                 <p>
-                  {job.kind === "import" && job.status === "succeeded"
+                  {job.kind === "import" && job.status === "completed"
                     ? "Full import report is available below."
                     : job.message || "Waiting for the coordinator"}
                 </p>
@@ -118,7 +118,7 @@ export function Jobs({
                     value={{
                       ...job,
                       message:
-                        job.kind === "import" && job.status === "succeeded"
+                        job.kind === "import" && job.status === "completed"
                           ? safeParse(job.message)
                           : job.message,
                     }}

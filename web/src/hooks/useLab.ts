@@ -16,7 +16,7 @@ export function useJobs(workspace: string | undefined) {
         : 10000,
   });
   const latestComplete = query.data?.find(
-    (job) => job.status === "succeeded",
+    (job) => job.status === "completed",
   )?.id;
   useEffect(() => {
     if (latestComplete) {

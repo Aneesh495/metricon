@@ -6,7 +6,7 @@ import os
 import shutil
 import uuid
 from pathlib import Path
-from typing import Any, Iterator
+from typing import Any, Callable, Iterator
 
 from metricon.storage.catalog import Catalog
 from metricon.storage.hashing import artifact_identity, atomic_json, file_hash, sync_directory
@@ -27,7 +27,14 @@ def file_lock(path: Path, blocking: bool = True, shared: bool = False) -> Iterat
 
 
 class ArtifactWriter:
-    def __init__(self, catalog: Catalog, kind: str, dataset_id: str):
+    def __init__(
+        self,
+        catalog: Catalog,
+        kind: str,
+        dataset_id: str,
+        fault: Callable[[str], None] | None = None,
+    ):
+        self.fault = fault
         self.catalog = catalog
         self.kind = kind
         self.dataset_id = dataset_id
@@ -44,6 +51,8 @@ class ArtifactWriter:
         return self
 
     def publish(self, metadata: dict[str, Any], parents: dict[str, str] | None = None) -> str:
+        if self.fault:
+            self.fault("before_manifest")
         identifier, manifest = artifact_identity(self.path, {"kind": self.kind, **metadata})
         atomic_json(self.path / "artifact.json", manifest)
         for file in self.path.rglob("*"):
@@ -53,14 +62,20 @@ class ArtifactWriter:
         destination = self.catalog.root / "artifacts" / identifier
         destination.parent.mkdir(parents=True, exist_ok=True)
         with file_lock(self.catalog.root / "locks" / "publish.lock"):
+            if self.fault:
+                self.fault("before_rename")
             if destination.exists():
                 shutil.rmtree(self.path)
             else:
                 os.rename(self.path, destination)
                 sync_directory(destination.parent)
+            if self.fault:
+                self.fault("after_rename")
             self.catalog.record_artifact(
                 identifier, self.kind, self.dataset_id, manifest, parents or {}
             )
+            if self.fault:
+                self.fault("after_catalog")
         self.published = True
         return identifier
 

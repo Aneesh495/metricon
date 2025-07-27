@@ -101,6 +101,13 @@ class AttemptEvent(BaseModel):
             raise ValueError("duration_ms must be finite")
         return float(value)
 
+    @field_validator("timestamp", mode="before")
+    @classmethod
+    def explicit_timestamp(cls, value: Any) -> Any:
+        if value is not None and not isinstance(value, (str, datetime)):
+            raise ValueError("Canonical timestamps require an ISO-8601 string or datetime")
+        return value
+
     @field_validator("timestamp", mode="after")
     @classmethod
     def timestamp_zone(cls, value: datetime | None) -> datetime | None:
@@ -131,12 +138,14 @@ class AttemptEvent(BaseModel):
     def content_hash(self) -> str:
         return digest(self.model_dump(mode="json", exclude={"provenance"}))
 
-    def arrow_row(self) -> dict[str, Any]:
+    def arrow_row(
+        self, identity: str | None = None, content_hash: str | None = None
+    ) -> dict[str, Any]:
         row = self.model_dump(exclude={"provenance"})
         row["skills"] = list(self.skills)
         row["provenance"] = canonical_json(self.provenance.model_dump())
-        row["identity"] = self.identity
-        row["content_hash"] = self.content_hash
+        row["identity"] = identity or self.identity
+        row["content_hash"] = content_hash or self.content_hash
         return row
 
 

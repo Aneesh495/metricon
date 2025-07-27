@@ -310,7 +310,8 @@ def run_experiment(
             },
             parents,
         )
-    register_experiment_lineage(catalog, identifier)
+    if not catalog.read_only:
+        register_experiment_lineage(catalog, identifier)
     if progress:
         progress(1.0, "Experiment published with hashed predictions and report")
     return identifier

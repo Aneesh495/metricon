@@ -55,10 +55,10 @@ def test_saved_prediction_inspection_and_replay(catalog):
     assert inspector.slice("global")["metrics"]["n"] == page["total"]
     replay = replay_bkt(catalog, artifact, "bkt", "demo-000", limit=3)
     assert len(replay["rows"]) == 3 and replay["total"] == 30
-    assert all(row['unit'] == 0 for row in replay['rows'])
-    for row in replay['rows']:
-        for skill in row['skills_before_unit']:
-            assert skill['prior_knowledge'] == skill['parameters']['initial']
+    assert all(row["unit"] == 0 for row in replay["rows"])
+    for row in replay["rows"]:
+        for skill in row["skills_before_unit"]:
+            assert skill["prior_knowledge"] == skill["parameters"]["initial"]
     graph = LineageGraph(catalog)
     assert graph.verify(artifact)["valid"]
     kinds = {node["kind"] for node in graph.graph(artifact)["nodes"]}

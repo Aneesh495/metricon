@@ -123,6 +123,9 @@ def _write_import(
 ) -> dict[str, Any]:
     identity_path = stage / "identities.sqlite"
     identities = sqlite3.connect(identity_path)
+    identities.execute("PRAGMA journal_mode=OFF")
+    identities.execute("PRAGMA synchronous=OFF")
+    identities.execute("PRAGMA cache_size=-65536")
     identities.execute(
         "CREATE TABLE identity (id TEXT PRIMARY KEY, hash TEXT NOT NULL) WITHOUT ROWID"
     )
@@ -163,16 +166,26 @@ def _write_import(
                         canonical_json(report.problem("rejected", record.row, str(error))) + "\n"
                     )
                     continue
-                local = identities.execute(
-                    "SELECT hash FROM identity WHERE id=?", (event.identity,)
-                ).fetchone()
-                persisted = lookup.execute(
-                    "SELECT content_hash FROM event_identity WHERE workspace_id=? AND identity=?",
-                    (workspace_id, event.identity),
-                ).fetchone()
-                previous = local[0] if local else persisted["content_hash"] if persisted else None
+                identity, content_hash = event.identity, event.content_hash
+                persisted = (
+                    lookup.execute(
+                        "SELECT content_hash FROM event_identity WHERE workspace_id=? AND identity=?",
+                        (workspace_id, identity),
+                    ).fetchone()
+                    if parent
+                    else None
+                )
+                previous = persisted["content_hash"] if persisted else None
+                if previous is None:
+                    inserted = identities.execute(
+                        "INSERT OR IGNORE INTO identity VALUES (?,?)", (identity, content_hash)
+                    ).rowcount
+                    if not inserted:
+                        previous = identities.execute(
+                            "SELECT hash FROM identity WHERE id=?", (identity,)
+                        ).fetchone()[0]
                 if previous is not None:
-                    if previous == event.content_hash:
+                    if previous == content_hash:
                         report.duplicates += 1
                     else:
                         report.conflicts += 1
@@ -182,16 +195,13 @@ def _write_import(
                                     "conflict",
                                     record.row,
                                     "Stable identity has different content",
-                                    event.identity,
+                                    identity,
                                 )
                             )
                             + "\n"
                         )
                     continue
-                identities.execute(
-                    "INSERT INTO identity VALUES (?,?)", (event.identity, event.content_hash)
-                )
-                batch.append(event.arrow_row())
+                batch.append(event.arrow_row(identity, content_hash))
                 report.accepted += 1
                 report.observation(event)
                 if len(batch) >= chunk_size:
@@ -243,6 +253,40 @@ def _write_import(
     sync_directory(destination.parent)
     if fault:
         fault("after_rename")
+    publication = {
+        "operation": "import",
+        "workspace_id": workspace_id,
+        "parent": parent,
+        "destination": str(destination.relative_to(catalog.root)),
+        "identifier": identifier,
+        "accepted": report.accepted,
+        "manifest": manifest,
+        "key": key,
+        "result": result,
+        "source_hash": source_hash,
+    }
+    if catalog.read_only:
+        catalog.deferred_publications.append(publication)
+    else:
+        commit_import(catalog, publication, fault)
+    return result
+
+
+def commit_import(
+    catalog: Catalog, publication: dict[str, Any], fault: Callable[[str], None] | None = None
+) -> None:
+    workspace_id, parent = publication["workspace_id"], publication["parent"]
+    identifier, key = publication["identifier"], publication["key"]
+    manifest, result = publication["manifest"], publication["result"]
+    source_hash = publication["source_hash"]
+    destination = (catalog.root / publication["destination"]).resolve()
+    if not destination.is_relative_to(catalog.root / "datasets"):
+        raise ValueError("Import publication is outside the dataset store")
+    if not (destination / "manifest.json").is_file():
+        raise ValueError("Import publication has no manifest")
+    for partition in manifest["new_partitions"]:
+        if file_hash(destination / partition["file"]) != partition["sha256"]:
+            raise ValueError("Import publication checksum changed")
     try:
         with catalog.transaction() as connection:
             current = connection.execute(
@@ -250,7 +294,7 @@ def _write_import(
             ).fetchone()[0]
             if current != parent:
                 raise RuntimeError("Workspace dataset changed during import")
-            if report.accepted:
+            if publication["accepted"]:
                 connection.execute(
                     "ATTACH DATABASE ? AS staged", (str(destination / "identities.sqlite"),)
                 )
@@ -286,7 +330,6 @@ def _write_import(
     except BaseException:
         shutil.rmtree(destination)
         raise
-    return result
 
 
 def reconcile(catalog: Catalog) -> dict[str, Any]:

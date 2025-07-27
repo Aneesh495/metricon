@@ -110,7 +110,7 @@ class JobResponse(BaseModel):
     dataset_id: str
     kind: str
     parameters: dict[str, Any]
-    status: Literal["queued", "running", "succeeded", "failed", "cancelled", "interrupted"]
+    status: Literal["queued", "running", "completed", "failed", "canceled", "interrupted"]
     progress: float
     message: str
     result_id: str | None

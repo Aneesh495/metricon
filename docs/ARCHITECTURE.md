@@ -31,6 +31,6 @@ sequenceDiagram
   Catalog-->>Adapter: Committed dataset version
 ```
 
-Workers read committed partitions and write unique artifact directories. There is no writable shared DuckDB database. Each query has its own in-memory analytical connection with a bounded memory limit and explicit thread count. Catalog writes use short SQLite transactions. Current task execution uses one coordinator thread; replacing execution with bounded processes and verifying forced interruption are pending.
+Workers read committed partitions and write unique artifact directories. There is no writable shared DuckDB database. Each query has its own in-memory analytical connection with a bounded memory limit and explicit thread count. Catalog writes use short SQLite transactions. The API coordinator owns metadata publication. Bounded subprocess workers use read-only catalog connections and return hashed output manifests. The [task runbook](TASKS.md) defines cancellation, wall-time limits, and restart behavior.
 
 Source-linked entry points: [import_file](../src/metricon/ingest/pipeline.py), [Catalog](../src/metricon/storage/catalog.py), [ArtifactWriter](../src/metricon/storage/artifacts.py), [as-of features](../src/metricon/features/history.py), [run_experiment](../src/metricon/evaluation/experiment.py), and [create_app](../src/metricon/api/app.py).

@@ -29,7 +29,7 @@ from metricon.evaluation.experiment import ExperimentConfig
 from metricon.ingest.adapters import AdapterOptions
 from metricon.ingest.demo import demo_workspace
 from metricon.ingest.pipeline import preview, reconcile
-from metricon.jobs.coordinator import JobCoordinator
+from metricon.tasks.coordinator import JobCoordinator
 from metricon.quality.audit import dataset_audit
 from metricon.recommendation.planner import PlannerConfig, plan
 from metricon.schema.events import AttemptEvent

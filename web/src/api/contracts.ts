@@ -133,9 +133,9 @@ export const JobSchema = z.object({
   status: z.enum([
     "queued",
     "running",
-    "succeeded",
+    "completed",
     "failed",
-    "cancelled",
+    "canceled",
     "interrupted",
   ]),
   progress: z.number(),

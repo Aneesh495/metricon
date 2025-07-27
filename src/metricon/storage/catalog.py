@@ -56,26 +56,37 @@ class ClosingConnection(sqlite3.Connection):
 
 
 class Catalog:
-    def __init__(self, root: Path):
+    def __init__(self, root: Path, read_only: bool = False):
         self.root = root.resolve()
-        self.root.mkdir(parents=True, exist_ok=True)
+        self.read_only = read_only
+        self.deferred_publications: list[dict[str, Any]] = []
+        if not read_only:
+            self.root.mkdir(parents=True, exist_ok=True)
         self.path = self.root / "catalog.sqlite"
-        with self.connect() as connection:
-            connection.executescript(DDL)
+        if not read_only:
+            with self.connect() as connection:
+                connection.executescript(DDL)
 
     def connect(self) -> sqlite3.Connection:
         connection = sqlite3.connect(
-            self.path, timeout=30, isolation_level=None, factory=ClosingConnection
+            f"file:{self.path}?mode=ro" if self.read_only else str(self.path),
+            uri=self.read_only,
+            timeout=30,
+            isolation_level=None,
+            factory=ClosingConnection,
         )
         connection.row_factory = sqlite3.Row
-        connection.execute("PRAGMA journal_mode=WAL")
-        connection.execute("PRAGMA synchronous=FULL")
+        if not self.read_only:
+            connection.execute("PRAGMA journal_mode=WAL")
+            connection.execute("PRAGMA synchronous=FULL")
         connection.execute("PRAGMA foreign_keys=ON")
         connection.execute("PRAGMA busy_timeout=30000")
         return connection
 
     @contextlib.contextmanager
     def transaction(self) -> Iterator[sqlite3.Connection]:
+        if self.read_only:
+            raise RuntimeError("Workers cannot mutate coordinator metadata")
         connection = self.connect()
         try:
             connection.execute("BEGIN IMMEDIATE")
@@ -182,6 +193,18 @@ class Catalog:
         manifest: dict[str, Any],
         parents: dict[str, str],
     ) -> None:
+        if self.read_only:
+            self.deferred_publications.append(
+                {
+                    "operation": "artifact",
+                    "identifier": identifier,
+                    "kind": kind,
+                    "dataset_id": dataset_id,
+                    "manifest": manifest,
+                    "parents": parents,
+                }
+            )
+            return
         with self.transaction() as connection:
             connection.execute(
                 "INSERT OR IGNORE INTO artifact VALUES (?,?,?,?,?)",
