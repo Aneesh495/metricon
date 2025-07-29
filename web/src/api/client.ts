@@ -168,6 +168,50 @@ export const api = {
       `/datasets/${dataset}/artifacts${parameters({ kind })}`,
       z.array(ArtifactSummarySchema),
     ),
+  exportDataset: (id: string, format: string) =>
+    post(
+      `/datasets/${id}/export${parameters({ format })}`,
+      z.object({
+        artifact_id: z.string(),
+        dataset_id: z.string(),
+        filename: z.string(),
+        download_url: z.string(),
+      }),
+      {},
+    ),
+  drift: (id: string, learner: string, window: number) =>
+    request(
+      `/datasets/${id}/drift${parameters({ learner_id: learner, window_events: window })}`,
+      z.record(z.unknown()),
+    ),
+  sessions: (id: string, learner: string, offset: number) =>
+    request(
+      `/datasets/${id}/sessions${parameters({ learner_id: learner || undefined, offset })}`,
+      z.record(z.unknown()),
+    ),
+  allExperiments: () =>
+    request(
+      "/experiments",
+      z.array(
+        z.object({
+          id: z.string(),
+          dataset_id: z.string(),
+          created_at: z.number(),
+          workspace_name: z.string(),
+          workspace_kind: z.string(),
+        }),
+      ),
+    ),
+  compare: (
+    left: string,
+    right: string,
+    left_model: string,
+    right_model: string,
+  ) =>
+    request(
+      `/compare${parameters({ left, right, left_model, right_model })}`,
+      z.record(z.unknown()),
+    ),
   artifact: (id: string) => request(`/artifacts/${id}`, ArtifactSchema),
   verify: (id: string) =>
     request(

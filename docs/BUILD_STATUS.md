@@ -15,7 +15,7 @@ Canonical schema; streaming adapters; strict validation and quarantine; immutabl
 ## Verified commands
 
 - `ruff check src tests`: passed.
-- `pytest -q`: 50 passed. One upstream Starlette/AnyIO deprecation warning remains visible.
+- `pytest -q`: 57 passed. One upstream Starlette/AnyIO deprecation warning remains visible.
 - `npm run check`: passed strict TypeScript checks.
 - `npm run test:web`: 3 passed.
 - `npm run build`: passed.
@@ -27,8 +27,10 @@ Process tasks now enforce read-only worker metadata, coordinator publication, co
 
 ## Incomplete verification
 
-extended simulator regimes; exports and scientific plots; adversarial leakage probes; large ingestion and crash campaigns; benchmark repetitions; browser workflows and screenshots; final public-data comparison; synchronized specifications and runbooks; skeptical review; final acceptance and independent evidence verification.
+scientific plot validation; benchmark repetitions; browser workflows and screenshots; final public-data comparison; synchronized specifications and runbooks; skeptical review; final acceptance and independent evidence verification.
 
 ## Next action
 
-Run the extended simulator, independent generated-case campaigns, and scale benchmarks. Resume from this file and current source. Raw records, generated artifacts, and the private execution ledger are ignored local files.
+Complete CLI/make workflows, final public-data and synthetic research, browser tests, and acceptance verification. Resume from this file and current source. Raw records, generated artifacts, and the private execution ledger are ignored local files.
+
+Independent campaigns completed: 10000 generated ingestion cases with field comparisons; 1000 analytical datasets against Python histories and Polars; 100 actual publication interruptions with restart/retry; simulation across four regimes and both budget modes with 30 seeds. Raw evidence is under ignored verification storage. Benchmark repetitions are running.

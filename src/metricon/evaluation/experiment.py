@@ -28,6 +28,7 @@ from metricon.evaluation.splits import (
     rolling_splits,
 )
 from metricon.features.history import FEATURE_VERSION, domain, labels, ordered_rows
+from metricon.features.leakage import preprocessing_manifest
 from metricon.models.base import save_model
 from metricon.models.baselines import GlobalBaseline, ItemPrior, LogisticHistory, RecentHistory
 from metricon.models.bkt import BKT
@@ -276,6 +277,10 @@ def run_experiment(
             fold_path = writer.path / f"fold-{index}"
             fold_path.mkdir()
             atomic_json(fold_path / "split.json", manifest.as_dict())
+            atomic_json(
+                fold_path / "preprocessing.json",
+                preprocessing_manifest(manifest.assignments, manifest.hash),
+            )
             parents[f"split-{index}"] = manifest.hash
             training = manifest.select(rows, "train")
             validation = manifest.select(rows, "validation")

@@ -1,3 +1,4 @@
+import { RunComparison } from "../components/RunComparison";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { FlaskConical, Play } from "lucide-react";
@@ -67,6 +68,7 @@ export function Experiments({
   }
   return (
     <div className="page-stack">
+      {artifactId ? <RunComparison current={artifactId} /> : null}
       <div className="page-intro">
         <div>
           <p className="eyebrow">03 / Experiment bench</p>

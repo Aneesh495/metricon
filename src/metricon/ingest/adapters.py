@@ -42,6 +42,18 @@ def csv_value(row: dict[str, str | None]) -> dict[str, Any]:
     if None in row:
         raise ValueError("CSV has more fields than its header")
     result: dict[str, Any] = dict(row)
+    encoding = result.pop("csv_encoding", None)
+    if encoding not in {None, "spreadsheet-literal-v1"}:
+        raise ValueError("Unsupported CSV literal encoding")
+    if encoding:
+        for key, value in result.items():
+            if (
+                isinstance(value, str)
+                and len(value) > 1
+                and value[0] == "'"
+                and value[1] in "=+-@\t\r"
+            ):
+                result[key] = value[1:]
     result["correct"] = strict_csv_boolean(str(result.get("correct")))
     result["source_sequence"] = int(result.get("source_sequence", ""))
     result["skills"] = json.loads(result.get("skills") or "[]")

@@ -22,10 +22,22 @@ class SimulationConfig:
     assumed_duration_seconds: float = 60
     max_actions: int = 1000
     trajectory_repetitions: int = 2
+    regime: str = "nominal"
+    budget_mode: str = "time"
+    question_budget: int = 15
+    retain_all_trajectories: bool = False
+    policy_parameters: dict[str, dict[str, float]] = field(default_factory=dict)
 
     def validate(self) -> None:
         if not 2 <= self.repetitions <= 5000 or not 1 <= self.max_actions <= 10000:
             raise ValueError("Invalid Monte Carlo or action bounds")
+        if self.regime not in {"nominal", "slow_learning", "forgetting", "misspecified"}:
+            raise ValueError("Unknown simulator regime")
+        if (
+            self.budget_mode not in {"time", "questions"}
+            or not 1 <= self.question_budget <= self.max_actions
+        ):
+            raise ValueError("Invalid equal-budget simulation mode")
         if not self.skills or len(self.skills) > 1000 or len(set(self.skills)) != len(self.skills):
             raise ValueError("Skills must be a nonempty unique bounded list")
         if not self.policies or not set(self.policies).issubset(
@@ -56,26 +68,59 @@ def simulate(config: SimulationConfig) -> dict[str, Any]:
         for skill in skills
     }
     parameters = {skill: BKTParameters(**config.parameters.get(skill, {})) for skill in skills}
+    assumed = {
+        skill: BKTParameters(
+            **config.policy_parameters.get(skill, config.parameters.get(skill, {}))
+        )
+        for skill in skills
+    }
+    if config.regime == "slow_learning":
+        parameters = {
+            skill: BKTParameters(**{**vars(value), "learning": value.learning * 0.25})
+            for skill, value in parameters.items()
+        }
+    elif config.regime == "forgetting":
+        parameters = {
+            skill: BKTParameters(**{**vars(value), "forgetting": 0.12})
+            for skill, value in parameters.items()
+        }
+    elif config.regime == "misspecified":
+        parameters = {
+            skill: BKTParameters(
+                **{
+                    **vars(value),
+                    "learning": 0.02 if index == 0 else 0.22,
+                    "slip": 0.35,
+                    "guess": 0.35,
+                    "forgetting": 0.15,
+                }
+            )
+            for index, (skill, value) in enumerate(parameters.items())
+        }
+    outcomes = []
     trajectories = []
     results: dict[str, list[dict[str, float]]] = {policy: [] for policy in config.policies}
     for repetition in range(config.repetitions):
-        environmental_rng = np.random.default_rng(
-            np.random.SeedSequence([config.seed, repetition, 0])
-        )
+        replicate_seed = config.seed + repetition
+        environmental_rng = np.random.default_rng(np.random.SeedSequence([replicate_seed, 0]))
         random_values = environmental_rng.random((config.max_actions + 1, len(skills), 3))
         skill_index = {skill: index for index, skill in enumerate(skills)}
         for policy in config.policies:
-            policy_rng = np.random.default_rng(np.random.SeedSequence([config.seed, repetition, 1]))
+            policy_rng = np.random.default_rng(np.random.SeedSequence([replicate_seed, 1]))
             known = {
                 skill: bool(random_values[0, skill_index[skill], 0] < parameters[skill].initial)
                 for skill in skills
             }
-            beliefs = {skill: Belief(parameters[skill].initial) for skill in skills}
+            beliefs = {skill: Belief(assumed[skill].initial) for skill in skills}
             elapsed = 0.0
             successes = 0
             actions = 0
             history = []
-            for index in range(config.max_actions):
+            for index in range(
+                min(config.max_actions, config.question_budget)
+                if config.budget_mode == "questions"
+                else config.max_actions
+            ):
                 available = [
                     skill for skill in skills if elapsed + duration[skill] <= config.budget_seconds
                 ]
@@ -91,11 +136,11 @@ def simulate(config: SimulationConfig) -> dict[str, Any]:
                     known[skill] = not bool(noise[1] < parameter.forgetting)
                 else:
                     known[skill] = bool(noise[2] < parameter.learning)
-                explanation = update_belief(beliefs[skill], correct, parameter, index)
+                explanation = update_belief(beliefs[skill], correct, assumed[skill], index)
                 elapsed += duration[skill]
                 successes += int(correct)
                 actions += 1
-                if repetition < config.trajectory_repetitions:
+                if config.retain_all_trajectories or repetition < config.trajectory_repetitions:
                     history.append(
                         {
                             "step": index,
@@ -114,11 +159,16 @@ def simulate(config: SimulationConfig) -> dict[str, Any]:
                 "elapsed_seconds": elapsed,
             }
             results[policy].append(result)
-            if repetition < config.trajectory_repetitions:
+            outcomes.append(
+                {"seed": replicate_seed, "policy": policy, "regime": config.regime, **result}
+            )
+            if config.retain_all_trajectories or repetition < config.trajectory_repetitions:
                 trajectories.append(
                     {
                         "policy": policy,
                         "repetition": repetition,
+                        "seed": replicate_seed,
+                        "regime": config.regime,
                         "events": history,
                         "result": result,
                     }
@@ -154,11 +204,17 @@ def simulate(config: SimulationConfig) -> dict[str, Any]:
             "method": "Paired Monte Carlo means using common environmental random numbers",
         }
     return {
-        "simulation_version": "policy-simulation/1",
+        "simulation_version": "policy-simulation/2",
         "configuration": config.as_dict(),
         "simulation_hash": digest(config.as_dict()),
         "synthetic": True,
         "summaries": summaries,
+        "outcomes": outcomes,
+        "seeds": [config.seed + repetition for repetition in range(config.repetitions)],
+        "environment_parameters": {skill: vars(value) for skill, value in parameters.items()},
+        "policy_assumptions": {skill: vars(value) for skill, value in assumed.items()},
+        "regime": config.regime,
+        "budget_mode": config.budget_mode,
         "paired_comparisons": paired,
         "trajectories": trajectories,
         "assumptions": {

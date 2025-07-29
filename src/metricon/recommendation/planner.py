@@ -25,6 +25,8 @@ class PlannerConfig:
     deficit_weight: float = 0.4
     priority_weight: float = 0.2
     available_questions: tuple[str, ...] = ()
+    model_artifact_id: str | None = None
+    model_weight: float = 0.2
 
     def validate(self) -> None:
         if not np.isfinite(self.budget_seconds) or self.budget_seconds <= 0:
@@ -36,7 +38,12 @@ class PlannerConfig:
             or not 1 <= self.minimum_duration_observations <= 1000
         ):
             raise ValueError("Invalid prerequisite or duration threshold")
-        weights = [self.uncertainty_weight, self.deficit_weight, self.priority_weight]
+        weights = [
+            self.uncertainty_weight,
+            self.deficit_weight,
+            self.priority_weight,
+            self.model_weight,
+        ]
         if any(not np.isfinite(value) or value < 0 for value in weights) or sum(weights) <= 0:
             raise ValueError("Ranking weights must be finite, nonnegative, and not all zero")
         if any(not np.isfinite(value) or value < 0 for value in self.priorities.values()):
@@ -110,6 +117,21 @@ def plan(
         }
         for row in durations
     }
+    model = None
+    if config.model_artifact_id:
+        from metricon.models.base import load_model
+        from metricon.storage.artifacts import verify_artifact
+
+        artifact = catalog.artifact(config.model_artifact_id)
+        if artifact["dataset_id"] != dataset_id or artifact["kind"] != "experiment":
+            raise ValueError("Planner model must belong to this exact dataset version")
+        if not verify_artifact(catalog, config.model_artifact_id)["valid"]:
+            raise ValueError("Planner model artifact checksum mismatch")
+        model = load_model(
+            catalog.root / "artifacts" / config.model_artifact_id / "fold-0/bkt.model.json"
+        )
+        model.states.clear()
+        model.predict(rows, update=True)
     candidates = []
     available = set(config.available_questions) if config.available_questions else set(counts)
     maximum_priority = max([1.0, *config.priorities.values()])
@@ -139,6 +161,13 @@ def plan(
             "user_priority": config.priority_weight * priority,
             "recent_repetition": -0.25 if question in recent else 0.0,
         }
+        model_state = None
+        if model and tags and rows:
+            hypothetical = {**rows[-1], "question_id": question, "skills": tags}
+            model_state = model.explain(hypothetical)
+            contributions["model_prediction_deficit"] = config.model_weight * (
+                1 - model_state["prediction"]
+            )
         score = sum(contributions.values())
         duration = duration_lookup.get(question)
         timed = duration is not None and duration["n"] >= config.minimum_duration_observations
@@ -149,6 +178,8 @@ def plan(
                 "score": score,
                 "contributions": contributions,
                 "observed_performance": posterior,
+                "model_state": model_state,
+                "model_artifact_id": config.model_artifact_id,
                 "duration": duration,
                 "timed_eligible": timed,
                 "prerequisite_blocks": blocked,

@@ -70,6 +70,7 @@ class PlannerRequest(Request):
     available_questions: list[str] = Field(default_factory=list)
     minimum_duration_observations: int = Field(default=3, ge=1, le=1000)
     recent_window: int = Field(default=10, ge=0, le=1000)
+    model_artifact_id: str | None = None
 
 
 class SimulationRequest(Request):
@@ -88,6 +89,9 @@ class SimulationRequest(Request):
     parameters: dict[str, dict[str, float]] = Field(default_factory=dict)
     assumed_duration_seconds: float = Field(default=60, gt=0, le=86400)
     trajectory_repetitions: int = Field(default=2, ge=0, le=5)
+    regime: Literal["nominal", "slow_learning", "forgetting", "misspecified"] = "nominal"
+    budget_mode: Literal["time", "questions"] = "time"
+    question_budget: int = Field(default=15, ge=1, le=1000)
 
 
 class DemoRequest(Request):

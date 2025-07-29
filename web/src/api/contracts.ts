@@ -297,6 +297,8 @@ export const ActionSchema = z.object({
   score: z.number(),
   contributions: z.record(z.number()),
   observed_performance: PosteriorSchema,
+  model_state: z.record(z.unknown()).nullable().optional(),
+  model_artifact_id: z.string().nullable().optional(),
   duration: z
     .object({
       n: z.number(),

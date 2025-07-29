@@ -1,3 +1,5 @@
+import { DataTools } from "../components/DataTools";
+import { VirtualRows } from "../components/VirtualRows";
 import { useDeferredValue, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { api } from "../api/client";
@@ -49,9 +51,10 @@ export function Observations({
         deferredSearch,
       ),
   });
+  const [learnerSearch, setLearnerSearch] = useState("");
   const learners = useQuery({
-    queryKey: ["learners", dataset],
-    queryFn: () => api.groups(dataset, "learner"),
+    queryKey: ["learners", dataset, learnerSearch],
+    queryFn: () => api.groups(dataset, "learner", 0, undefined, learnerSearch),
   });
   const trend = useQuery({
     queryKey: ["trend", dataset, learner, axis, question],
@@ -86,6 +89,13 @@ export function Observations({
             result.
           </p>
         </div>
+        <Field label="Find learner ID">
+          <input
+            value={learnerSearch}
+            onChange={(event) => setLearnerSearch(event.target.value)}
+            placeholder="Search all learners"
+          />
+        </Field>
         <Field label="Learner">
           <select
             value={learner}
@@ -230,60 +240,58 @@ export function Observations({
           <ErrorState error={groups.error} />
         ) : groups.data ? (
           <>
-            <div className="table-scroll">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Identity</th>
-                    <th>Observed accuracy and uncertainty</th>
-                    <th>Learners</th>
-                    <th>Duration coverage</th>
-                    <th>Inspect</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {groups.data.rows.map((row) => (
-                    <tr key={row.id}>
-                      <td>
-                        <strong>{row.id}</strong>
-                        {row.accuracy.n < 10 ? (
-                          <Tag tone="amber">Sparse</Tag>
-                        ) : null}
-                      </td>
-                      <td>
-                        <IntervalBar value={row.accuracy} />
-                      </td>
-                      <td>{number(row.learners)}</td>
-                      <td>
-                        {number(row.known_durations)} / {number(row.accuracy.n)}
-                      </td>
-                      <td>
-                        {dimension === "question" ? (
-                          <button
-                            className="text-button"
-                            onClick={() => {
-                              setQuestion(row.id);
-                              setHistoryOffset(0);
-                            }}
-                          >
-                            History
-                          </button>
-                        ) : dimension === "learner" ? (
-                          <button
-                            className="text-button"
-                            onClick={() => onLearner(row.id)}
-                          >
-                            Select
-                          </button>
-                        ) : (
-                          <span className="muted">Tagged attempts</span>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+            <VirtualRows
+              rows={groups.data.rows}
+              columns={[
+                "Identity",
+                "Observed accuracy and uncertainty",
+                "Learners",
+                "Duration coverage",
+                "Inspect",
+              ]}
+              rowKey={(row) => row.id}
+              label="Question and skill aggregate table"
+              render={(row) => (
+                <>
+                  {" "}
+                  <td>
+                    <strong>{row.id}</strong>
+                    {row.accuracy.n < 10 ? (
+                      <Tag tone="amber">Sparse</Tag>
+                    ) : null}
+                  </td>
+                  <td>
+                    <IntervalBar value={row.accuracy} />
+                  </td>
+                  <td>{number(row.learners)}</td>
+                  <td>
+                    {number(row.known_durations)} / {number(row.accuracy.n)}
+                  </td>
+                  <td>
+                    {dimension === "question" ? (
+                      <button
+                        className="text-button"
+                        onClick={() => {
+                          setQuestion(row.id);
+                          setHistoryOffset(0);
+                        }}
+                      >
+                        History
+                      </button>
+                    ) : dimension === "learner" ? (
+                      <button
+                        className="text-button"
+                        onClick={() => onLearner(row.id)}
+                      >
+                        Select
+                      </button>
+                    ) : (
+                      <span className="muted">Tagged attempts</span>
+                    )}
+                  </td>
+                </>
+              )}
+            />
             {groups.data.overlapping_denominators ? (
               <p className="footnote">
                 Each multi-skill answer contributes once per explicit tag. Skill
@@ -434,6 +442,7 @@ export function Observations({
           </Panel>
         </div>
       ) : null}
+      <DataTools dataset={dataset} learner={learner} />
       {summary ? (
         <Inspector
           value={summary.definitions}

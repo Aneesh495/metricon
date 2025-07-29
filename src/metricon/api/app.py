@@ -14,6 +14,9 @@ from fastapi.staticfiles import StaticFiles
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 
 from metricon.analytics.engine import Analytics
+from metricon.analytics.exports import export_dataset
+from metricon.analytics.sessions import sessions
+from metricon.quality.drift import DriftConfig, drift_report
 from metricon.api.contracts import (
     DemoRequest,
     ExperimentRequest,
@@ -26,6 +29,7 @@ from metricon.api.contracts import (
     WorkspaceResponse,
 )
 from metricon.evaluation.experiment import ExperimentConfig
+from metricon.evaluation.comparison import compare_runs
 from metricon.ingest.adapters import AdapterOptions
 from metricon.ingest.demo import demo_workspace
 from metricon.ingest.pipeline import preview, reconcile
@@ -125,6 +129,24 @@ def create_app(settings: Settings | None = None, start_jobs: bool = True) -> Fas
             "schema_version": "attempt/1",
             "coordinator_running": coordinator.thread is not None and coordinator.thread.is_alive(),
         }
+
+    @app.get("/api/experiments")
+    def all_experiments() -> list[dict[str, Any]]:
+        with catalog.connect() as connection:
+            rows = connection.execute(
+                "SELECT a.id,a.dataset_id,a.created_at,w.name workspace_name,w.kind workspace_kind FROM artifact a JOIN dataset d ON d.id=a.dataset_id JOIN workspace w ON w.id=d.workspace_id WHERE a.kind='experiment' ORDER BY a.created_at DESC LIMIT 200"
+            ).fetchall()
+        return [dict(row) for row in rows]
+
+    @app.get("/api/compare")
+    def comparison(
+        left: str,
+        right: str,
+        left_model: str = "bkt",
+        right_model: str = "global",
+        fold: int = Query(0, ge=0, le=9),
+    ) -> dict[str, Any]:
+        return compare_runs(catalog, left, right, left_model, right_model, fold)
 
     @app.get("/api/schema")
     def schema() -> dict[str, Any]:
@@ -272,6 +294,15 @@ def create_app(settings: Settings | None = None, start_jobs: bool = True) -> Fas
     ) -> dict[str, Any]:
         return Analytics(catalog, dataset_id).history(learner_id, question_id, limit, offset)
 
+    @app.get("/api/datasets/{dataset_id}/sessions")
+    def session_history(
+        dataset_id: str,
+        learner_id: str | None = None,
+        offset: int = Query(0, ge=0),
+        limit: int = Query(50, ge=1, le=500),
+    ) -> dict[str, Any]:
+        return sessions(catalog, dataset_id, learner_id, offset, limit)
+
     @app.get("/api/datasets/{dataset_id}/streaks")
     def streaks(dataset_id: str, learner_id: str) -> dict[str, Any]:
         return Analytics(catalog, dataset_id).streaks(learner_id)
@@ -296,6 +327,35 @@ def create_app(settings: Settings | None = None, start_jobs: bool = True) -> Fas
     def planner(dataset_id: str, body: PlannerRequest) -> dict[str, Any]:
         parameters = body.model_dump(exclude={"learner_id"})
         return plan(catalog, dataset_id, body.learner_id, PlannerConfig(**parameters))
+
+    @app.post("/api/datasets/{dataset_id}/export")
+    def export(
+        dataset_id: str, format: str = "json", learner_id: str | None = None
+    ) -> dict[str, Any]:
+        identifier = export_dataset(catalog, dataset_id, format, learner_id)
+        return {
+            "artifact_id": identifier,
+            "dataset_id": dataset_id,
+            "filename": f"events.{format}",
+            "download_url": f"/api/artifacts/{identifier}/files/events.{format}",
+        }
+
+    @app.get("/api/datasets/{dataset_id}/drift")
+    def drift(
+        dataset_id: str,
+        learner_id: str,
+        window_events: int = Query(100, ge=30, le=10000),
+        artifact_id: str | None = None,
+        model: str = "bkt",
+    ) -> dict[str, Any]:
+        return drift_report(
+            catalog,
+            dataset_id,
+            learner_id,
+            DriftConfig(window_events=window_events, minimum_events=min(50, window_events)),
+            artifact_id,
+            model,
+        )
 
     @app.get("/api/datasets/{dataset_id}/artifacts")
     def artifacts(dataset_id: str, kind: str | None = None) -> list[dict[str, Any]]:

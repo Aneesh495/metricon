@@ -41,6 +41,11 @@ function ActionList({ actions, timed }: { actions: Action[]; timed: boolean }) {
                 </span>
               ))}
             </div>
+            {action.model_artifact_id ? (
+              <a href={`?tab=provenance&artifact=${action.model_artifact_id}`}>
+                Inspect fitted run {hash(action.model_artifact_id)}
+              </a>
+            ) : null}
             <small>
               Observed performance{" "}
               {percentage(action.observed_performance.mean)}, interval{" "}
@@ -77,6 +82,13 @@ export function PolicyLab({
   onJob: (id: string) => void;
 }) {
   const queryClient = useQueryClient();
+  const [modelArtifact, setModelArtifact] = useState("");
+  const [regime, setRegime] = useState("nominal");
+  const [budgetMode, setBudgetMode] = useState("time");
+  const models = useQuery({
+    queryKey: ["artifacts", dataset, "experiment"],
+    queryFn: () => api.artifacts(dataset, "experiment"),
+  });
   const [budget, setBudget] = useState(15);
   const [priorities, setPriorities] = useState("{}");
   const [prerequisites, setPrerequisites] = useState("{}");
@@ -92,6 +104,7 @@ export function PolicyLab({
         budget_seconds: budget * 60,
         priorities: parseObject(priorities, "Priorities"),
         prerequisites: parseObject(prerequisites, "Prerequisites"),
+        model_artifact_id: modelArtifact || null,
       }),
   });
   const simulationJob = useMutation({
@@ -99,6 +112,8 @@ export function PolicyLab({
       api.simulate(workspace, {
         seed,
         repetitions,
+        regime,
+        budget_mode: budgetMode,
         budget_seconds: budget * 60,
         skills: skills
           .split(",")
@@ -244,6 +259,24 @@ export function PolicyLab({
         ) : null}
       </Panel>
       <Panel
+        title="Model state for planning"
+        description="Optional fitted BKT replay of observed history. Its posterior is an estimate, not certified knowledge."
+      >
+        <Field label="Planner model run">
+          <select
+            value={modelArtifact}
+            onChange={(event) => setModelArtifact(event.target.value)}
+          >
+            <option value="">Observed uncertainty only</option>
+            {models.data?.map((run) => (
+              <option key={run.id} value={run.id}>
+                {hash(run.id, 20)}
+              </option>
+            ))}
+          </select>
+        </Field>
+      </Panel>
+      <Panel
         title="Synthetic policy experiment"
         eyebrow="Simulation only"
         description="Policies receive answer-conditioned beliefs, never the simulated latent state."
@@ -257,6 +290,26 @@ export function PolicyLab({
         }
       >
         <div className="form-grid">
+          <Field label="Simulator regime">
+            <select
+              value={regime}
+              onChange={(event) => setRegime(event.target.value)}
+            >
+              <option value="nominal">Nominal BKT environment</option>
+              <option value="slow_learning">Slow learning</option>
+              <option value="forgetting">Forgetting</option>
+              <option value="misspecified">Deliberately misspecified</option>
+            </select>
+          </Field>
+          <Field label="Equal simulation budget">
+            <select
+              value={budgetMode}
+              onChange={(event) => setBudgetMode(event.target.value)}
+            >
+              <option value="time">Same time allowance</option>
+              <option value="questions">Same question allowance</option>
+            </select>
+          </Field>
           <Field label="Simulation skill IDs">
             <input
               value={skills}

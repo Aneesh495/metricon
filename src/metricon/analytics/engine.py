@@ -263,35 +263,47 @@ class Analytics:
 
     def cohort(self, learner_id: str, minimum_attempts: int = 20) -> dict[str, Any]:
         with analytical_connection(self.catalog, self.dataset_id) as connection:
+            target_items = connection.execute(
+                "SELECT count(DISTINCT question_id) FROM events WHERE learner_id=?", [learner_id]
+            ).fetchone()[0]
             rows = _rows(
                 connection.execute(
-                    """
-                SELECT learner_id,count(*) n,avg(correct::INTEGER) accuracy FROM events
-                GROUP BY learner_id HAVING count(*)>=? ORDER BY learner_id
-            """,
-                    [minimum_attempts],
+                    """WITH target_items AS (SELECT DISTINCT source_namespace,question_id FROM events WHERE learner_id=?)
+                SELECT learner_id,count(*) n,avg(correct::INTEGER) accuracy,count(DISTINCT question_id) shared_items
+                FROM events JOIN target_items USING(source_namespace,question_id)
+                GROUP BY learner_id HAVING count(*)>=? ORDER BY learner_id""",
+                    [learner_id, minimum_attempts],
                 )
             )
         target = next((row for row in rows if row["learner_id"] == learner_id), None)
-        if len(rows) < 2 or target is None:
+        peers = [
+            row
+            for row in rows
+            if row["learner_id"] != learner_id and row["shared_items"] >= max(2, target_items * 0.5)
+        ]
+        if not peers or target is None:
             return {
                 "available": False,
-                "reason": "At least two eligible learners, including the selected learner, are required.",
+                "reason": "No comparable observed peers with enough attempts and shared items",
+                "filter": "At least two shared items, half the target item set, and the minimum attempt denominator",
             }
         import numpy as np
 
-        peers = np.asarray([row["accuracy"] for row in rows if row["learner_id"] != learner_id])
-        dataset = self.catalog.dataset(self.dataset_id)
-        workspace = self.catalog.workspace(dataset["workspace_id"])
+        workspace = self.catalog.workspace(self.catalog.dataset(self.dataset_id)["workspace_id"])
         return {
             "available": True,
-            "percentile": midrank_percentile(target["accuracy"], peers),
+            "percentile": midrank_percentile(
+                target["accuracy"], np.asarray([row["accuracy"] for row in peers])
+            ),
             "cohort_id": self.dataset_id,
             "eligible_peers": len(peers),
             "minimum_attempts": minimum_attempts,
+            "target_attempts": target["n"],
+            "shared_item_fraction_minimum": 0.5,
+            "target_items": target_items,
             "tie_method": "midrank",
             "synthetic": workspace["kind"] == "synthetic",
-            "comparison_limit": "Descriptive cohort; item mix and learner selection may differ.",
+            "comparison_limit": "Matched observed item support; exposure frequencies and selection may still differ. Descriptive, not a population ability ranking.",
         }
 
     def materialize(self, parameters: dict[str, Any]) -> str:
