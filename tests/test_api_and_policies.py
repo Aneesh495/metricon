@@ -59,6 +59,13 @@ def test_timestamped_group_api(catalog):
         )
         assert response.status_code == 200
         assert response.json()["rows"][0]["first_timestamp"] is not None
+        dataset = demo["workspace"]["dataset_id"]
+        for endpoint in ["streaks", "sessions", "drift", "history", "cohort"]:
+            response = client.get(f"/api/datasets/{dataset}/{endpoint}?learner_id=demo-000")
+            assert response.status_code == 200, (endpoint, response.text)
+        streak = client.get(f"/api/datasets/{dataset}/streaks?learner_id=demo-000").json()
+        assert streak["domains"]
+        assert streak["domains"][0]["longest_correct_streak"] > 0
 
 
 def test_planner_unknown_time_not_imputed(catalog):

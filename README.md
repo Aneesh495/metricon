@@ -9,7 +9,7 @@ An imported answer is an observation. The last correct answer is not confirmed m
 Requires Python 3.13, Node 24, and uv. Dependencies are locked in `uv.lock` and `package-lock.json`.
 
 ```bash
-uv sync --locked --extra dev
+uv sync --locked
 npm ci
 npm run build
 uv run metricon serve --port 8000

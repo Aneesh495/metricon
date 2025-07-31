@@ -7,7 +7,7 @@ from typing import Any
 import numpy as np
 from scipy.optimize import minimize
 
-from metricon.features.history import domain, ordered_rows, units
+from metricon.features.history import domain, units
 from metricon.models.base import EPSILON, probabilities
 
 
@@ -36,16 +36,33 @@ def step(prior: float, correct: bool, parameters: BKTParameters) -> tuple[float,
 
 
 def padded_sequences(sequences: list[list[int]], max_cells: int = 8_000_000) -> list[np.ndarray]:
-    ordered = sorted((sequence for sequence in sequences if sequence), key=len)
+    return [
+        values
+        for values, _ in padded_units(
+            sequences, [[1] * len(sequence) for sequence in sequences], max_cells
+        )
+    ]
+
+
+def padded_units(
+    sequences: list[list[int]], starts: list[list[int]], max_cells: int = 8_000_000
+) -> list[tuple[np.ndarray, np.ndarray]]:
+    ordered = sorted(zip(sequences, starts), key=lambda pair: len(pair[0]))
     chunks = []
-    pending: list[list[int]] = []
-    for sequence in ordered:
+    pending = []
+    for sequence, unit_starts in ordered:
+        if not sequence:
+            continue
+        if len(sequence) != len(unit_starts):
+            raise ValueError("BKT observations and unit markers must align")
         if pending and len(sequence) * (len(pending) + 1) > max_cells:
-            chunks.append(_pad(pending))
+            chunks.append(
+                (_pad([pair[0] for pair in pending]), _pad([pair[1] for pair in pending]))
+            )
             pending = []
-        pending.append(sequence)
+        pending.append((sequence, unit_starts))
     if pending:
-        chunks.append(_pad(pending))
+        chunks.append((_pad([pair[0] for pair in pending]), _pad([pair[1] for pair in pending])))
     return chunks
 
 
@@ -56,39 +73,62 @@ def _pad(sequences: list[list[int]]) -> np.ndarray:
     return array
 
 
+def _prediction_derivative(
+    k: np.ndarray, dk: np.ndarray, slip: float, guess: float
+) -> tuple[np.ndarray, np.ndarray]:
+    prediction = np.clip(guess + k * (1 - slip - guess), EPSILON, 1 - EPSILON)
+    derivative = dk * (1 - slip - guess)
+    derivative[:, 2] -= k
+    derivative[:, 3] += 1 - k
+    return prediction, derivative
+
+
 def forward_objective(
-    parameters: np.ndarray, matrices: list[np.ndarray], forgetting: bool = False
+    parameters: np.ndarray,
+    matrices: list[np.ndarray],
+    forgetting: bool = False,
+    unit_starts: list[np.ndarray] | None = None,
 ) -> tuple[float, np.ndarray]:
     initial, learning, slip, guess = parameters[:4]
     forget = parameters[4] if forgetting else 0.0
     dimension = len(parameters)
     total = 0.0
     gradient = np.zeros(dimension)
-    for matrix in matrices:
+    for matrix_index, matrix in enumerate(matrices):
         knowledge = np.full(matrix.shape[1], initial)
         derivative = np.zeros((matrix.shape[1], dimension))
         derivative[:, 0] = 1.0
-        for observations in matrix:
+        held_knowledge = knowledge.copy()
+        held_derivative = derivative.copy()
+        for index, observations in enumerate(matrix):
             active = observations >= 0
             if not active.any():
                 continue
-            k = knowledge[active]
-            dk = derivative[active]
+            fresh = (
+                active if unit_starts is None else active & (unit_starts[matrix_index][index] == 1)
+            )
+            held_knowledge[fresh] = knowledge[fresh]
+            held_derivative[fresh] = derivative[fresh]
+            k, dk = knowledge[active], derivative[active]
             y = observations[active]
-            prediction = np.clip(guess + k * (1 - slip - guess), EPSILON, 1 - EPSILON)
-            dp = dk * (1 - slip - guess)
-            dp[:, 2] -= k
-            dp[:, 3] += 1 - k
+            prediction, dp = _prediction_derivative(
+                held_knowledge[active], held_derivative[active], slip, guess
+            )
             evidence = np.where(y == 1, prediction, 1 - prediction)
             de = dp * np.where(y == 1, 1, -1)[:, None]
             total -= float(np.log(evidence).sum())
             gradient -= (de / evidence[:, None]).sum(axis=0)
+            instant_prediction, instant_derivative = _prediction_derivative(k, dk, slip, guess)
+            instant_evidence = np.where(y == 1, instant_prediction, 1 - instant_prediction)
+            instant_de = instant_derivative * np.where(y == 1, 1, -1)[:, None]
             known_likelihood = np.where(y == 1, 1 - slip, slip)
             numerator = k * known_likelihood
             dn = dk * known_likelihood[:, None]
             dn[:, 2] += k * np.where(y == 1, -1, 1)
-            posterior = numerator / evidence
-            dposterior = (dn * evidence[:, None] - numerator[:, None] * de) / evidence[:, None] ** 2
+            posterior = numerator / instant_evidence
+            dposterior = (
+                dn * instant_evidence[:, None] - numerator[:, None] * instant_de
+            ) / instant_evidence[:, None] ** 2
             following = posterior * (1 - forget) + (1 - posterior) * learning
             dfollowing = dposterior * (1 - forget - learning)
             dfollowing[:, 1] += 1 - posterior
@@ -135,9 +175,15 @@ class BKT:
         sequences: dict[str, dict[tuple[str, str, str], list[int]]] = defaultdict(
             lambda: defaultdict(list)
         )
-        for row in ordered_rows(rows):
-            for skill in self.selected_skills(row):
-                sequences[skill][domain(row)].append(int(row["correct"]))
+        starts = defaultdict(lambda: defaultdict(list))
+        for unit in units(rows):
+            seen = set()
+            for row in unit:
+                for skill in self.selected_skills(row):
+                    key = (skill, domain(row))
+                    sequences[skill][domain(row)].append(int(row["correct"]))
+                    starts[skill][domain(row)].append(int(key not in seen))
+                    seen.add(key)
         rng = np.random.default_rng(self.seed)
         bounds = [(0.001, 0.999), (0.0001, 0.6), (0.001, 0.4), (0.001, 0.4)]
         if self.forgetting:
@@ -154,7 +200,9 @@ class BKT:
                     "sequences": len(values),
                 }
                 continue
-            matrices = padded_sequences(values)
+            padded = padded_units(values, list(starts[skill].values()))
+            matrices = [pair[0] for pair in padded]
+            markers = [pair[1] for pair in padded]
             fits = []
             for start in range(self.starts):
                 initial = np.array([0.2, 0.1, 0.1, 0.2] + ([0.02] if self.forgetting else []))
@@ -163,7 +211,7 @@ class BKT:
                 fit = minimize(
                     forward_objective,
                     initial,
-                    args=(matrices, self.forgetting),
+                    args=(matrices, self.forgetting, markers),
                     jac=True,
                     method="L-BFGS-B",
                     bounds=bounds,
@@ -177,7 +225,8 @@ class BKT:
                 "fitted": True,
                 "converged": bool(best.success),
                 "message": str(best.message),
-                "negative_log_likelihood": float(best.fun),
+                "negative_composite_log_score": float(best.fun),
+                "objective": "Marginal pre-unit log scores; delayed source-ordered conditioning and per-opportunity transitions. Standard likelihood when units have one skill observation.",
                 "n": n,
                 "sequences": len(sequences[skill]),
                 "iterations": int(best.nit),

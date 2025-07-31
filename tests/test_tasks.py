@@ -48,3 +48,34 @@ def test_process_cancellation_and_wall_time(catalog):
         assert catalog.artifacts(demo["workspace"]["dataset_id"], "simulation") == []
     finally:
         coordinator.close()
+
+
+def test_process_experiment_publishes_without_worker_metadata_writes(catalog):
+    demo = demo_workspace(catalog, learners=4, attempts=40)
+    coordinator = JobCoordinator(catalog, maximum_workers=1, wall_time_seconds=60)
+    task = coordinator.submit(
+        demo["workspace"]["id"],
+        "experiment",
+        {
+            "families": ["global", "bkt"],
+            "bootstrap_repetitions": 20,
+            "bkt_starts": 1,
+            "bkt_max_iterations": 20,
+            "ablations": False,
+        },
+    )
+    coordinator.start()
+    try:
+        deadline = time.monotonic() + 60
+        while time.monotonic() < deadline:
+            result = coordinator.get(task["id"])
+            if result["status"] in {"completed", "failed", "canceled"}:
+                break
+            time.sleep(0.1)
+        assert result["status"] == "completed", result
+        artifact = catalog.artifact(result["result_id"])
+        assert artifact["kind"] == "experiment"
+        assert artifact["dataset_id"] == demo["workspace"]["dataset_id"]
+        assert catalog.ancestors(result["result_id"])
+    finally:
+        coordinator.close()

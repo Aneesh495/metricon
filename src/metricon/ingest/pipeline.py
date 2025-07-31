@@ -3,7 +3,6 @@ from __future__ import annotations
 import json
 import os
 import shutil
-import sqlite3
 import time
 import uuid
 from dataclasses import asdict
@@ -19,6 +18,7 @@ from metricon.schema.events import ARROW_SCHEMA, SCHEMA_VERSION, canonical_json,
 from metricon.storage.artifacts import file_lock
 from metricon.storage.catalog import Catalog
 from metricon.storage.hashing import atomic_json, file_hash, sync_directory
+from metricon.storage.identities import StagedIdentityIndex, staged_entries
 
 
 class ImportCancelled(RuntimeError):
@@ -121,14 +121,7 @@ def _write_import(
     cancelled: Callable[[], bool] | None,
     fault: Callable[[str], None] | None,
 ) -> dict[str, Any]:
-    identity_path = stage / "identities.sqlite"
-    identities = sqlite3.connect(identity_path)
-    identities.execute("PRAGMA journal_mode=OFF")
-    identities.execute("PRAGMA synchronous=OFF")
-    identities.execute("PRAGMA cache_size=-65536")
-    identities.execute(
-        "CREATE TABLE identity (id TEXT PRIMARY KEY, hash TEXT NOT NULL) WITHOUT ROWID"
-    )
+    identities = StagedIdentityIndex(stage)
     lookup = catalog.connect()
     report = QualityReport()
     batch: list[dict[str, Any]] = []
@@ -177,13 +170,7 @@ def _write_import(
                 )
                 previous = persisted["content_hash"] if persisted else None
                 if previous is None:
-                    inserted = identities.execute(
-                        "INSERT OR IGNORE INTO identity VALUES (?,?)", (identity, content_hash)
-                    ).rowcount
-                    if not inserted:
-                        previous = identities.execute(
-                            "SELECT hash FROM identity WHERE id=?", (identity,)
-                        ).fetchone()[0]
+                    previous = identities.insert_or_previous(identity, content_hash)
                 if previous is not None:
                     if previous == content_hash:
                         report.duplicates += 1
@@ -225,6 +212,7 @@ def _write_import(
         "row_count": base["row_count"] + report.accepted,
         "new_partitions": partitions,
         "quality": report.as_dict(),
+        "identity_index": identities.manifest(),
     }
     identifier = digest(manifest) if report.accepted else parent
     result = {
@@ -295,12 +283,12 @@ def commit_import(
             if current != parent:
                 raise RuntimeError("Workspace dataset changed during import")
             if publication["accepted"]:
-                connection.execute(
-                    "ATTACH DATABASE ? AS staged", (str(destination / "identities.sqlite"),)
-                )
-                connection.execute(
-                    "INSERT INTO event_identity SELECT ?,id,hash FROM staged.identity",
-                    (workspace_id,),
+                connection.executemany(
+                    "INSERT INTO event_identity VALUES (?,?,?)",
+                    (
+                        (workspace_id, identity, content_hash)
+                        for identity, content_hash in staged_entries(destination, manifest)
+                    ),
                 )
                 connection.execute(
                     "INSERT INTO dataset VALUES (?,?,?,?,?,?)",

@@ -119,12 +119,18 @@ def cluster_intervals(
     counts = np.bincount(inverse, minlength=len(clusters))
     rng = np.random.default_rng(seed)
     samples: dict[str, list[float]] = {key: [] for key in totals}
+    auc_samples = []
     for _ in range(repetitions):
         chosen = rng.integers(0, len(clusters), len(clusters))
         weights = np.bincount(chosen, minlength=len(clusters))
         denominator = weights @ counts
         for key, total in totals.items():
             samples[key].append(float(weights @ total / denominator))
+        row_weights = weights[inverse]
+        if np.sum(row_weights[outcomes == 0]) and np.sum(row_weights[outcomes == 1]):
+            auc_samples.append(
+                float(roc_auc_score(outcomes, predictions, sample_weight=row_weights))
+            )
     tail = (1 - confidence) / 2
     intervals = {
         key: {
@@ -141,7 +147,13 @@ def cluster_intervals(
         "confidence": confidence,
         "method": "Learner-cluster percentile bootstrap, whole histories preserved",
         "intervals": intervals,
-        "auroc_interval": None,
+        "auroc_interval": {
+            "lower": float(np.quantile(auc_samples, tail)),
+            "upper": float(np.quantile(auc_samples, 1 - tail)),
+            "eligible_draws": len(auc_samples),
+        }
+        if auc_samples
+        else None,
     }
 
 

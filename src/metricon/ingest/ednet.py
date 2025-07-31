@@ -59,6 +59,23 @@ def download_ednet(cache: Path, kind: str, maximum_bytes: int = 2_000_000_000) -
         if file_hash(destination) != manifest["sha256"]:
             raise ValueError("Cached EdNet archive checksum changed")
         return manifest
+    if destination.exists():
+        if not zipfile.is_zipfile(destination):
+            raise ValueError("Existing EdNet cache is not a ZIP archive")
+        manifest = {
+            "source": EDNET_LINKS[kind],
+            "repository": EDNET_REPOSITORY,
+            "license": EDNET_LICENSE,
+            "sha256": file_hash(destination),
+            "bytes": destination.stat().st_size,
+            "downloaded_at": None,
+            "verified_at": datetime.now(timezone.utc).isoformat(),
+            "cache_adoption": True,
+            "local_mtime": destination.stat().st_mtime,
+            "integrity": "Existing independently acquired archive, verified by local checksum; no publisher checksum or inferred download date",
+        }
+        atomic_json(manifest_path, manifest)
+        return manifest
     url = EDNET_LINKS[kind]
     started = time.time()
     with urllib.request.urlopen(url, timeout=60) as response:

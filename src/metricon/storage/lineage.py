@@ -189,6 +189,17 @@ def register_experiment_lineage(catalog: Catalog, artifact_id: str) -> dict[str,
     root = catalog.root / "artifacts" / artifact_id
     files = artifact["manifest"]["files"]
     file_nodes = {}
+    for name in sorted(files):
+        if name.endswith("split.json"):
+            split = json.loads((root / name).read_text())
+            split_hash = digest(split)
+            node_id = digest([artifact["dataset_id"], split_hash])
+            graph.register(
+                node_id,
+                "split-manifest",
+                {"dataset_id": artifact["dataset_id"], "split_hash": split_hash},
+                {"dataset": artifact["dataset_id"]},
+            )
     for name, checksum in sorted(files.items()):
         if name.startswith("source/") or name == "source-manifest.json":
             kind = "pipeline-source"

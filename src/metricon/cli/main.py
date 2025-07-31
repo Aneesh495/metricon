@@ -8,6 +8,10 @@ from typing import Any
 
 from metricon import __version__
 from metricon.analytics.engine import Analytics
+from metricon.analytics.exports import export_dataset
+from metricon.evaluation.comparison import compare_runs
+from metricon.evaluation.frozen import evaluate_frozen
+from metricon.ingest.validation import validate_file
 from metricon.evaluation.experiment import ExperimentConfig, run_experiment
 from metricon.ingest.adapters import AdapterOptions
 from metricon.ingest.demo import demo_workspace
@@ -32,7 +36,7 @@ def parser() -> argparse.ArgumentParser:
     workspace.add_argument("name")
     workspace.add_argument("--kind", choices=["user", "research"], default="user")
     commands.add_parser("workspaces")
-    for name in ["import", "preview"]:
+    for name in ["import", "ingest", "preview", "validate"]:
         command = commands.add_parser(name)
         command.add_argument("file", type=Path)
         command.add_argument(
@@ -40,20 +44,20 @@ def parser() -> argparse.ArgumentParser:
         )
         command.add_argument("--namespace", default="local")
         command.add_argument("--learner", default="local-learner")
-        if name == "import":
+        if name in {"import", "ingest"}:
             command.add_argument("--workspace", required=True)
     demo = commands.add_parser("demo")
     demo.add_argument("--seed", type=int, default=2026)
     demo.add_argument("--learners", type=int, default=50)
     demo.add_argument("--attempts", type=int, default=60)
-    for name in ["overview", "audit", "experiment"]:
+    for name in ["overview", "analyze", "audit", "experiment", "train"]:
         command = commands.add_parser(name)
         command.add_argument("dataset")
-        if name == "overview":
+        if name in {"overview", "analyze"}:
             command.add_argument("--learner")
         if name == "audit":
             command.add_argument("--checksums", action="store_true")
-        if name == "experiment":
+        if name in {"experiment", "train"}:
             command.add_argument(
                 "--split", choices=["forward", "learner", "rolling"], default="forward"
             )
@@ -84,15 +88,30 @@ def parser() -> argparse.ArgumentParser:
     serve = commands.add_parser("serve")
     serve.add_argument("--port", type=int, default=8000)
     commands.add_parser("reconcile")
-    verify = commands.add_parser("verify")
+    verify = commands.add_parser("verify-artifact")
     verify.add_argument("artifact")
     simulation = commands.add_parser("simulate")
     simulation.add_argument("--config", type=Path)
     simulation.add_argument("--output", type=Path)
-    planner = commands.add_parser("plan")
+    planner = commands.add_parser("plan", aliases=["recommend"])
     planner.add_argument("dataset")
     planner.add_argument("learner")
     planner.add_argument("--budget", type=float, default=900)
+    planner.add_argument("--run")
+    evaluate = commands.add_parser("evaluate")
+    evaluate.add_argument("artifact")
+    compare = commands.add_parser("compare")
+    compare.add_argument("left")
+    compare.add_argument("right")
+    compare.add_argument("--left-model", default="bkt")
+    compare.add_argument("--right-model", default="global")
+    export = commands.add_parser("export")
+    export.add_argument("dataset")
+    export.add_argument("--format", choices=["json", "csv", "parquet", "ndjson"], default="json")
+    export.add_argument("--output", type=Path)
+    commands.add_parser("benchmark")
+    commands.add_parser("acceptance")
+    commands.add_parser("verify")
     return result
 
 
@@ -114,18 +133,20 @@ def execute(arguments: argparse.Namespace) -> Any:
         return catalog.create_workspace(arguments.name, arguments.kind)
     if name == "workspaces":
         return catalog.workspaces()
-    if name in {"import", "preview"}:
+    if name in {"import", "ingest", "preview", "validate"}:
         options = AdapterOptions(arguments.format, arguments.namespace, arguments.learner)
+        if name == "validate":
+            return validate_file(arguments.file, options)
         if name == "preview":
             return preview(arguments.file, options)
         return import_file(catalog, arguments.workspace, arguments.file, options)
     if name == "demo":
         return demo_workspace(catalog, arguments.seed, arguments.learners, arguments.attempts)
-    if name == "overview":
+    if name in {"overview", "analyze"}:
         return Analytics(catalog, arguments.dataset).overview(arguments.learner)
     if name == "audit":
         return dataset_audit(catalog, arguments.dataset, arguments.checksums)
-    if name == "experiment":
+    if name in {"experiment", "train"}:
         config = ExperimentConfig(
             seed=arguments.seed,
             split=arguments.split,
@@ -180,14 +201,14 @@ def execute(arguments: argparse.Namespace) -> Any:
         return None
     if name == "reconcile":
         return reconcile(catalog)
-    if name == "verify":
+    if name == "verify-artifact":
         return verify_artifact(catalog, arguments.artifact)
-    if name == "plan":
+    if name in {"plan", "recommend"}:
         return plan(
             catalog,
             arguments.dataset,
             arguments.learner,
-            PlannerConfig(budget_seconds=arguments.budget),
+            PlannerConfig(budget_seconds=arguments.budget, model_artifact_id=arguments.run),
         )
     if name == "simulate":
         values = json.loads(arguments.config.read_text()) if arguments.config else {}
@@ -196,6 +217,37 @@ def execute(arguments: argparse.Namespace) -> Any:
             atomic_json(arguments.output, result)
             return {"output": str(arguments.output), "simulation_hash": result["simulation_hash"]}
         return result
+    if name == "evaluate":
+        return evaluate_frozen(catalog, arguments.artifact)
+    if name == "compare":
+        return compare_runs(
+            catalog, arguments.left, arguments.right, arguments.left_model, arguments.right_model
+        )
+    if name == "export":
+        import shutil
+
+        identifier = export_dataset(catalog, arguments.dataset, arguments.format)
+        path = catalog.root / "artifacts" / identifier / f"events.{arguments.format}"
+        if arguments.output:
+            arguments.output.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(path, arguments.output)
+        return {
+            "artifact_id": identifier,
+            "dataset_id": arguments.dataset,
+            "path": str(arguments.output or path),
+        }
+    if name == "benchmark":
+        from metricon.evaluation.benchmark import benchmark
+
+        summary = benchmark(catalog.root / "benchmark")
+        return {
+            "path": str(catalog.root / "benchmark/benchmark.json"),
+            "workloads": list(summary["summaries"]),
+        }
+    if name in {"acceptance", "verify"}:
+        from metricon.evaluation.acceptance import acceptance, verify_evidence
+
+        return acceptance(catalog.root) if name == "acceptance" else verify_evidence(catalog.root)
     raise ValueError("Unsupported command")
 
 

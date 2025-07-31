@@ -281,7 +281,7 @@ def run_experiment(
                 fold_path / "preprocessing.json",
                 preprocessing_manifest(manifest.assignments, manifest.hash),
             )
-            parents[f"split-{index}"] = manifest.hash
+            parents[f"split-{index}"] = digest([dataset_id, manifest.hash])
             training = manifest.select(rows, "train")
             validation = manifest.select(rows, "validation")
             test = manifest.select(rows, "test")
@@ -291,8 +291,6 @@ def run_experiment(
                 training, validation, test, manifest, config, fold_path, progress, cancelled
             )
             report["folds"].append(fold)
-            with catalog.transaction() as connection:
-                catalog.add_lineage(connection, manifest.hash, {"dataset": dataset_id})
         report["runtime_seconds"] = time.perf_counter() - started
         maximum_rss = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
         report["peak_process_rss_bytes"] = int(

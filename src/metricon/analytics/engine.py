@@ -192,23 +192,30 @@ class Analytics:
                 connection.execute(
                     """
               WITH ordered AS (
-                SELECT *,CASE WHEN order_scope='question' THEN question_id ELSE '' END domain,
+                SELECT *,CASE WHEN order_scope='question' THEN question_id ELSE '' END ordering_scope,
                   sum(CASE WHEN correct THEN 0 ELSE 1 END) OVER (
                     PARTITION BY source_namespace,learner_id,CASE WHEN order_scope='question' THEN question_id ELSE '' END
                     ORDER BY timestamp NULLS LAST,source_sequence,event_id ROWS UNBOUNDED PRECEDING) failures
                 FROM events WHERE learner_id=?
               ), runs AS (
-                SELECT source_namespace,domain,failures,count(*) length FROM ordered WHERE correct
-                GROUP BY source_namespace,domain,failures
-              ) SELECT source_namespace,domain,max(length) longest_correct_streak FROM runs
-                GROUP BY source_namespace,domain ORDER BY source_namespace,domain
+                SELECT source_namespace,ordering_scope,failures,count(*) length FROM ordered WHERE correct
+                GROUP BY source_namespace,ordering_scope,failures
+              ) SELECT source_namespace,ordering_scope,max(length) longest_correct_streak FROM runs
+                GROUP BY source_namespace,ordering_scope ORDER BY source_namespace,ordering_scope
             """,
                     [learner_id],
                 )
             )
         return {
-            "domains": rows,
-            "global_streak_available": bool(rows) and all(row["domain"] == "" for row in rows),
+            "domains": [
+                {
+                    "source_namespace": row["source_namespace"],
+                    "domain": row["ordering_scope"],
+                    "longest_correct_streak": row["longest_correct_streak"],
+                }
+                for row in rows
+            ],
+            "global_streak_available": len(rows) == 1 and rows[0]["ordering_scope"] == "",
             "definition": METRIC_DEFINITIONS["streak"],
         }
 

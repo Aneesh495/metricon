@@ -52,7 +52,12 @@ def typescript_lines(path: Path) -> int:
 
 
 def main() -> None:
-    paths = sorted((ROOT / "src/metricon").rglob("*.py"))
+    verification = {"campaigns.py", "benchmark.py", "workloads.py", "acceptance.py", "evidence.py"}
+    paths = sorted(
+        path
+        for path in (ROOT / "src/metricon").rglob("*.py")
+        if not (path.parent.name == "evaluation" and path.name in verification)
+    )
     paths += sorted(
         path
         for path in (ROOT / "web/src").rglob("*")
@@ -64,10 +69,34 @@ def main() -> None:
         else typescript_lines(path)
         for path in paths
     }
+    modules = {}
+    for name, count in counts.items():
+        module = (
+            "/".join(name.split("/")[:3])
+            if name.startswith("src/")
+            else "/".join(name.split("/")[:3])
+        )
+        modules[module] = modules.get(module, 0) + count
+    test_paths = [
+        *(ROOT / "tests").rglob("*.py"),
+        *(ROOT / "web/src").rglob("*.test.ts"),
+        *(ROOT / "web/e2e").rglob("*.ts"),
+    ]
+    test_counts = {
+        path.relative_to(ROOT).as_posix(): python_lines(path)
+        if path.suffix == ".py"
+        else typescript_lines(path)
+        for path in test_paths
+    }
     result = {
         "method": "Nonblank, noncomment physical lines in reusable Python and authored TS/TSX. Python docstrings excluded. No formatting expansion is counted separately.",
         "exclusions": "Tests, docs, config, scripts, CSS, copied UI, fixtures, datasets, generated assets, notebooks, dependencies and lockfiles.",
         "files": counts,
+        "modules": modules,
+        "test_files": test_counts,
+        "test_total": sum(test_counts.values()),
+        "include_paths": ["src/metricon/**/*.py", "web/src/**/*.ts", "web/src/**/*.tsx"],
+        "verification_exclusions": sorted(verification),
         "total": sum(counts.values()),
         "minimum": 10000,
         "target": [12000, 17000],

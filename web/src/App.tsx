@@ -238,6 +238,13 @@ export default function App() {
             New workspace
           </button>
         </div>
+        <button
+          className="text-button"
+          disabled={demo.isPending}
+          onClick={() => demo.mutate()}
+        >
+          Create synthetic sandbox
+        </button>
         <nav aria-label="Workbench navigation">
           {navigation.map((item) => (
             <button
@@ -326,6 +333,25 @@ export default function App() {
         <div className="modal-backdrop">
           <section
             className="modal"
+            onKeyDown={(event) => {
+              if (event.key === "Escape") setCreating(false);
+              if (event.key === "Tab") {
+                const controls =
+                  event.currentTarget.querySelectorAll<HTMLElement>(
+                    "button:not([disabled]),input,select,textarea,a[href]",
+                  );
+                const first = controls[0],
+                  last = controls[controls.length - 1];
+                if (event.shiftKey && document.activeElement === first) {
+                  event.preventDefault();
+                  last?.focus();
+                }
+                if (!event.shiftKey && document.activeElement === last) {
+                  event.preventDefault();
+                  first?.focus();
+                }
+              }
+            }}
             role="dialog"
             aria-modal="true"
             aria-labelledby="workspace-title"

@@ -1,18 +1,28 @@
-name: ci
-
+name: Fast checks
 on:
   push:
     branches: [main]
   pull_request:
-
 jobs:
   check:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: '0.8.18'
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: '24'
           cache: npm
+      - run: uv sync --locked --python 3.13
       - run: npm ci
-      - run: npm run check
+      - run: make test
+      - run: uv build --wheel --out-dir .metricon/build
+      - run: npx playwright install --with-deps chromium
+      - run: make test-e2e
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: browser-evidence
+          path: .metricon/verification/browser

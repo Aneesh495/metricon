@@ -59,6 +59,37 @@ def test_bundle_features_do_not_see_coupled_answers():
     assert features[0] == changed[0] and features[1] == changed[1]
 
 
+def test_bkt_coupled_objective_matches_independent_scalar_reference():
+    from metricon.models.bkt import forward_objective
+
+    parameters = np.array([0.2, 0.1, 0.08, 0.22])
+    observations = np.array([[1], [0], [1], [1]], dtype=np.int8)
+    starts = np.array([[1], [0], [1], [0]], dtype=np.int8)
+    knowledge = float(parameters[0])
+    loss = 0.0
+    held = knowledge
+    for outcome, marker in zip(observations[:, 0], starts[:, 0]):
+        if marker:
+            held = knowledge
+        predicted = held * (1 - parameters[2]) + (1 - held) * parameters[3]
+        loss -= np.log(predicted if outcome else 1 - predicted)
+        instantaneous = knowledge * (1 - parameters[2]) + (1 - knowledge) * parameters[3]
+        likelihood = 1 - parameters[2] if outcome else parameters[2]
+        posterior = knowledge * likelihood / (instantaneous if outcome else 1 - instantaneous)
+        knowledge = posterior + (1 - posterior) * parameters[1]
+    actual, gradient = forward_objective(parameters, [observations], False, [starts])
+    assert actual == pytest.approx(loss, abs=1e-12)
+    for index in range(4):
+        above, below = parameters.copy(), parameters.copy()
+        above[index] += 1e-6
+        below[index] -= 1e-6
+        numeric = (
+            forward_objective(above, [observations], False, [starts])[0]
+            - forward_objective(below, [observations], False, [starts])[0]
+        ) / 2e-6
+        assert gradient[index] == pytest.approx(numeric, abs=1e-5)
+
+
 @pytest.mark.parametrize(
     "factory",
     [

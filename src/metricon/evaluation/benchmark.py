@@ -15,6 +15,7 @@ from typing import Any
 import numpy as np
 
 from metricon.evaluation.workloads import reference_checksum, write_workload
+from metricon.evaluation.experiment import environment
 from metricon.features.materialize import materialize_history
 from metricon.ingest.adapters import AdapterOptions
 from metricon.ingest.pipeline import import_file
@@ -22,6 +23,7 @@ from metricon.models.baselines import GlobalBaseline
 from metricon.models.bkt import BKT
 from metricon.storage.catalog import Catalog
 from metricon.storage.hashing import atomic_json
+from metricon.storage.lineage import source_code_hash
 from metricon.storage.query import analytical_connection
 
 QUERIES = {
@@ -40,6 +42,18 @@ def peak_rss() -> int:
 def measure_worker(request: dict[str, Any]) -> dict[str, Any]:
     store, source = Path(request["store"]), Path(request["source"])
     catalog = Catalog(store)
+    repository = Path(__file__).parents[3]
+    source_snapshot = source_code_hash(repository / "src/metricon")
+    locked_environment = environment(repository / "uv.lock")
+    snapshot = Path(request["snapshot_root"]) / source_snapshot["hash"]
+    snapshot.mkdir(parents=True, exist_ok=True)
+    for name in source_snapshot["files"]:
+        target = snapshot / name
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(repository / "src/metricon" / name, target)
+    atomic_json(snapshot / "manifest.json", source_snapshot)
+    atomic_json(snapshot / "environment.json", locked_environment)
+    shutil.copyfile(repository / "uv.lock", snapshot / "uv.lock")
     workspace = catalog.create_workspace("Streaming synthetic workload", "synthetic")
     started = time.perf_counter()
     result = import_file(
@@ -110,6 +124,9 @@ def measure_worker(request: dict[str, Any]) -> dict[str, Any]:
         (catalog.root / part["path"]).stat().st_size for part in manifest["partitions"]
     )
     return {
+        "source_code": source_snapshot,
+        "environment": locked_environment,
+        "source_snapshot": str(snapshot),
         "rows": request["rows"],
         "repetition": request["repetition"],
         "source_sha256": request["corpus"]["sha256"],
@@ -162,6 +179,7 @@ def benchmark(
                         "corpus": corpus,
                         "rows": size,
                         "repetition": repetition,
+                        "snapshot_root": str((root / "source-snapshots").resolve()),
                     },
                 )
                 environment = {
@@ -171,7 +189,8 @@ def benchmark(
                     "MKL_NUM_THREADS": "1",
                     "POLARS_MAX_THREADS": "2",
                 }
-                with (root / f"worker-{size}-{repetition}.log").open("w") as log:
+                log_path = root / f"worker-{size}-{repetition}-{time.time_ns()}.log"
+                with log_path.open("w") as log:
                     subprocess.run(
                         [
                             sys.executable,

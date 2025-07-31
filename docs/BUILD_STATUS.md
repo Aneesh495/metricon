@@ -15,7 +15,7 @@ Canonical schema; streaming adapters; strict validation and quarantine; immutabl
 ## Verified commands
 
 - `ruff check src tests`: passed.
-- `pytest -q`: 57 passed. One upstream Starlette/AnyIO deprecation warning remains visible.
+- `pytest -q`: 62 passed. One upstream Starlette/AnyIO deprecation warning remains visible.
 - `npm run check`: passed strict TypeScript checks.
 - `npm run test:web`: 3 passed.
 - `npm run build`: passed.
@@ -34,3 +34,11 @@ scientific plot validation; benchmark repetitions; browser workflows and screens
 Complete CLI/make workflows, final public-data and synthetic research, browser tests, and acceptance verification. Resume from this file and current source. Raw records, generated artifacts, and the private execution ledger are ignored local files.
 
 Independent campaigns completed: 10000 generated ingestion cases with field comparisons; 1000 analytical datasets against Python histories and Polars; 100 actual publication interruptions with restart/retry; simulation across four regimes and both budget modes with 30 seeds. Raw evidence is under ignored verification storage. Benchmark repetitions are running.
+
+## Current remediation checkpoint
+
+The actual browser workflows exposed coordinator ownership and dataset-scoped split lineage failures. Both now have process and cross-dataset regression tests. BKT fitting uses the same frozen coupled-unit prediction policy as evaluation, with independent scalar score and finite-difference gradient checks. Materialized features close overlapping sessions and timestamp ties rather than assuming contiguous sessions.
+
+The first measured ten-million-event import used 391,495,680 bytes of peak RSS but took 1,763 seconds. Its raw results remain retained as a baseline. Binary full-digest identity shards replace the random text-key staging tree; independent generated imports and all 100 interruption cases passed again. The full five-repetition scale campaign is running against the revised implementation. Throughput targets remain measurements, not asserted results.
+
+Scientific plot generation and frozen cross-model comparison ran on the preliminary research artifact. Browser verification remains incomplete while the remaining policy, cancellation, export and responsive flows are exercised. No completion claim has been made.

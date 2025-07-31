@@ -10,9 +10,10 @@
     "dev": "npm run dev --workspace web",
     "build": "npm run build --workspace web",
     "check": "npm run check --workspace web",
-    "test:web": "npm run test --workspace web"
+    "test:web": "npm run test --workspace web",
+    "test:e2e": "playwright test --config web/playwright.config.ts && python3 scripts/summarize_e2e.py"
   },
   "devDependencies": {
-    "@playwright/test": "^1.55.1"
+    "@playwright/test": "1.55.1"
   }
 }

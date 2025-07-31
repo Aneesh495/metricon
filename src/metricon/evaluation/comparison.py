@@ -57,7 +57,7 @@ def compare_runs(
                 "test": result["test"],
                 "calibrated_test": result.get("calibrated_test"),
                 "intervals": result.get("intervals"),
-                "source_hash": report["source_code"]["hash"],
+                "source_hash": report.get("source_code", {}).get("hash"),
             }
         )
     identical_dataset = runs[0]["dataset_id"] == runs[1]["dataset_id"]

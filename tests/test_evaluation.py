@@ -62,3 +62,14 @@ def test_reusable_pipeline_hashes_every_artifact(catalog):
     report = read_json(catalog.root / "artifacts" / artifact / "report.json")
     assert report["folds"][0]["models"]["global"]["test"]["n"] > 0
     assert catalog.ancestors(artifact)
+
+
+def test_equivalent_split_assignments_in_distinct_datasets_have_scoped_lineage(catalog):
+    config = ExperimentConfig(families=("global",), bootstrap_repetitions=20, ablations=False)
+    first = demo_workspace(catalog, learners=4, attempts=20)
+    second = demo_workspace(catalog, learners=4, attempts=20)
+    first_run = run_experiment(catalog, first["workspace"]["dataset_id"], config)
+    second_run = run_experiment(catalog, second["workspace"]["dataset_id"], config)
+    assert first_run != second_run
+    assert catalog.ancestors(first_run)
+    assert catalog.ancestors(second_run)
