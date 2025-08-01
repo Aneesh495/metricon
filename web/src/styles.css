@@ -83,6 +83,13 @@ a {
   color: var(--accent);
   text-decoration: none;
 }
+.notice {
+  overflow-wrap: anywhere;
+  min-width: 0;
+}
+.notice > div {
+  min-width: 0;
+}
 input,
 select,
 textarea {

@@ -52,7 +52,7 @@ class AttemptEvent(BaseModel):
     skills: tuple[str, ...] = ()
     correct: bool
     attempt_kind: Literal["practice", "assessment", "review", "unknown"] = "unknown"
-    source_sequence: int = Field(ge=0)
+    source_sequence: int = Field(ge=0, le=9223372036854775807)
     timestamp: datetime | None = None
     duration_ms: float | None = Field(default=None, ge=0)
     session_id: str | None = None
@@ -115,7 +115,10 @@ class AttemptEvent(BaseModel):
             return None
         if value.tzinfo is None or value.utcoffset() is None:
             raise ValueError("timestamps require a timezone offset")
-        return value.astimezone(timezone.utc)
+        try:
+            return value.astimezone(timezone.utc)
+        except OverflowError as error:
+            raise ValueError("Timestamp UTC conversion exceeds the supported calendar") from error
 
     @field_validator("session_id", "bundle_id", mode="before")
     @classmethod

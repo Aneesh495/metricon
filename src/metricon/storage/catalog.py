@@ -34,6 +34,10 @@ CREATE TABLE IF NOT EXISTS lineage (
  child TEXT NOT NULL, parent TEXT NOT NULL, role TEXT NOT NULL,
  PRIMARY KEY(child, parent, role)
 ) WITHOUT ROWID;
+CREATE TABLE IF NOT EXISTS lineage_node (
+ id TEXT PRIMARY KEY, kind TEXT NOT NULL, metadata TEXT NOT NULL,
+ locator TEXT, checksum TEXT, created_at REAL NOT NULL
+);
 CREATE TABLE IF NOT EXISTS job (
  id TEXT PRIMARY KEY, workspace_id TEXT NOT NULL, dataset_id TEXT NOT NULL,
  kind TEXT NOT NULL, parameters TEXT NOT NULL, status TEXT NOT NULL,

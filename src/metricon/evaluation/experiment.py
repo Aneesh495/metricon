@@ -107,6 +107,9 @@ class ExperimentConfig:
 
 
 def environment(lock_path: Path | None = None) -> dict[str, Any]:
+    if lock_path is None or not lock_path.exists():
+        packaged = Path(__file__).parents[1] / "dependency.lock"
+        lock_path = packaged if packaged.is_file() else lock_path
     packages = [
         "numpy",
         "polars",

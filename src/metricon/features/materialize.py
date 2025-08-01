@@ -108,8 +108,7 @@ def materialize_history(
                 ORDER BY sequence_position ROWS UNBOUNDED PRECEDING) unit_number FROM boundaries
                 ORDER BY source_namespace,learner_id,ordering_domain,sequence_position"""
         else:
-            sql = f"""SELECT *,row_number() OVER(PARTITION BY source_namespace,learner_id,ordering_domain
-                ORDER BY source_sequence,event_id) unit_number FROM ({base})
+            sql = f"""SELECT *,event_id unit_number FROM ({base})
                 ORDER BY source_namespace,learner_id,ordering_domain,source_sequence,event_id"""
         reader = connection.execute(sql).fetch_record_batch(chunk_size)
         for arrow_batch in reader:

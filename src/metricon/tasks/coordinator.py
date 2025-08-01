@@ -216,8 +216,12 @@ class JobCoordinator:
             return
         with path.open() as handle:
             handle.seek(running.offset)
-            lines = handle.readlines()
-            running.offset = handle.tell()
+            lines = []
+            while line := handle.readline():
+                if not line.endswith("\n"):
+                    break
+                lines.append(line)
+                running.offset = handle.tell()
         if lines:
             result = json.loads(lines[-1])
             with self.catalog.transaction() as connection:

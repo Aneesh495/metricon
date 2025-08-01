@@ -11,7 +11,7 @@ export default defineConfig({
   outputDir: "../.metricon/verification/browser/test-results",
   reporter: [
     ["list"],
-    ["json", { outputFile: ".metricon/verification/browser/playwright.json" }],
+    ["json", { outputFile: fileURLToPath(new URL("../.metricon/verification/browser/playwright.json", import.meta.url)) }],
   ],
   use: {
     baseURL: "http://127.0.0.1:8020",

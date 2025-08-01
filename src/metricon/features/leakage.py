@@ -21,6 +21,15 @@ NUMERIC_FEATURES = {
 }
 CATEGORICAL_FEATURES = {"kind"}
 SKILL_PREFIXES = ("skill:", "prior_rate:", "prior_count:")
+COMPONENT_FIT_PARTITIONS = {
+    "model_parameters": "train",
+    "item_priors": "train",
+    "hierarchical_prior": "train",
+    "feature_vocabulary": "train",
+    "feature_scaler": "train",
+    "hyperparameter_selection": "validation",
+    "probability_calibration": "validation",
+}
 
 
 @dataclass(frozen=True)
@@ -144,3 +153,38 @@ def preprocessing_manifest(assignments: dict[str, str], split_hash: str) -> dict
         "components": entries,
         "test_policy": "Final test identities are absent from every fitting and selection scope",
     }
+
+
+def audit_preprocessing_manifest(
+    manifest: dict[str, Any], assignments: dict[str, str], split_hash: str
+) -> dict[str, Any]:
+    if manifest.get("split_hash") != split_hash:
+        raise ValueError("Preprocessing scope refers to a different split")
+    entries = manifest.get("components", [])
+    names = [entry["component"] for entry in entries]
+    if len(names) != len(set(names)) or set(names) != set(COMPONENT_FIT_PARTITIONS):
+        raise ValueError("Preprocessing scope omits, repeats, or invents a required component")
+    expected = {
+        partition: {identity for identity, label in assignments.items() if label == partition}
+        for partition in {"train", "validation"}
+    }
+    checked = []
+    for entry in entries:
+        partition = COMPONENT_FIT_PARTITIONS[entry["component"]]
+        scope = FitScope(
+            entry["component"],
+            entry["fit_partition"],
+            tuple(entry["identities"]),
+            entry["split_hash"],
+        )
+        result = audit_fit_scope(scope, assignments, partition)
+        if set(scope.identities) != expected[partition]:
+            raise ValueError(
+                "Preprocessing scope does not cover its exact authorized input partition"
+            )
+        if scope.split_hash != split_hash or result["identity_hash"] != entry["identity_hash"]:
+            raise ValueError("Preprocessing scope identity or split digest was altered")
+        if entry.get("feature_version") != FEATURE_VERSION:
+            raise ValueError("Preprocessing scope uses a different feature contract")
+        checked.append(result)
+    return {"valid": True, "components": checked, "split_hash": split_hash}

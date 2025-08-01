@@ -21,8 +21,9 @@ CREATE TABLE IF NOT EXISTS lineage_node (
 class LineageGraph:
     def __init__(self, catalog: Catalog):
         self.catalog = catalog
-        with catalog.connect() as connection:
-            connection.executescript(NODE_DDL)
+        if not catalog.read_only:
+            with catalog.connect() as connection:
+                connection.executescript(NODE_DDL)
 
     def register(
         self,
@@ -181,10 +182,81 @@ def source_code_hash(root: Path) -> dict[str, Any]:
     }
 
 
+def register_import_lineage(
+    catalog: Catalog, connection: sqlite3.Connection, publication: dict[str, Any]
+) -> None:
+    manifest = publication["manifest"]
+    identifier = publication["identifier"]
+    directory = catalog.root / publication["destination"]
+
+    def node(node_id: str, kind: str, metadata: dict, path: Path | None = None) -> None:
+        connection.execute(
+            "INSERT OR IGNORE INTO lineage_node VALUES (?,?,?,?,?,?)",
+            (
+                node_id,
+                kind,
+                canonical_json(metadata),
+                str(path.relative_to(catalog.root)) if path else None,
+                file_hash(path) if path else None,
+                time.time(),
+            ),
+        )
+
+    source_hash = publication["source_hash"]
+    node(
+        source_hash,
+        "original-source",
+        {"sha256": source_hash},
+        directory / f"original.{manifest['source']['format']}",
+    )
+    transform = {
+        "schema_version": manifest["schema_version"],
+        "adapter_version": manifest["adapter_version"],
+        "options": manifest.get("adapter_options", manifest["source"]),
+    }
+    transform_id = digest(transform)
+    node(transform_id, "normalization-contract", transform)
+    node(
+        identifier,
+        "dataset",
+        {"row_count": manifest["row_count"], "schema_version": manifest["schema_version"]},
+        directory / "manifest.json",
+    )
+    connection.execute(
+        "INSERT OR IGNORE INTO lineage VALUES (?,?,?)", (identifier, transform_id, "normalization")
+    )
+    for partition in manifest["partitions"]:
+        partition_id = digest(["canonical-parquet", partition["sha256"]])
+        node(
+            partition_id,
+            "canonical-partition",
+            {"sha256": partition["sha256"], "rows": partition["rows"]},
+            catalog.root / partition["path"],
+        )
+        connection.execute(
+            "INSERT OR IGNORE INTO lineage VALUES (?,?,?)", (identifier, partition_id, "partition")
+        )
+
+
 def register_experiment_lineage(catalog: Catalog, artifact_id: str) -> dict[str, Any]:
     artifact = catalog.artifact(artifact_id)
     if artifact["kind"] != "experiment":
         raise ValueError("Experiment lineage requires an experiment artifact")
+    dataset_id = artifact["dataset_id"]
+    while dataset_id:
+        dataset = catalog.dataset(dataset_id)
+        with catalog.transaction() as connection:
+            register_import_lineage(
+                catalog,
+                connection,
+                {
+                    "manifest": dataset["manifest"],
+                    "identifier": dataset_id,
+                    "destination": f"datasets/{dataset_id}",
+                    "source_hash": dataset["manifest"]["source"]["sha256"],
+                },
+            )
+        dataset_id = dataset["parent_id"]
     graph = LineageGraph(catalog)
     root = catalog.root / "artifacts" / artifact_id
     files = artifact["manifest"]["files"]

@@ -19,6 +19,7 @@ from metricon.storage.artifacts import file_lock
 from metricon.storage.catalog import Catalog
 from metricon.storage.hashing import atomic_json, file_hash, sync_directory
 from metricon.storage.identities import StagedIdentityIndex, staged_entries
+from metricon.storage.lineage import register_import_lineage
 
 
 class ImportCancelled(RuntimeError):
@@ -206,6 +207,7 @@ def _write_import(
     manifest = {
         "schema_version": SCHEMA_VERSION,
         "adapter_version": ADAPTER_VERSION,
+        "adapter_options": asdict(options),
         "parent": parent,
         "source": {"sha256": source_hash, "format": options.format, "namespace": options.namespace},
         "import_key": key,
@@ -272,6 +274,12 @@ def commit_import(
         raise ValueError("Import publication is outside the dataset store")
     if not (destination / "manifest.json").is_file():
         raise ValueError("Import publication has no manifest")
+    if json.loads((destination / "manifest.json").read_text()) != manifest:
+        raise ValueError("Import publication manifest changed")
+    if file_hash(destination / f"original.{manifest['source']['format']}") != source_hash:
+        raise ValueError("Original source checksum changed before publication")
+    if sum(part["rows"] for part in manifest["new_partitions"]) != publication["accepted"]:
+        raise ValueError("Published partition counts disagree with accepted rows")
     for partition in manifest["new_partitions"]:
         if file_hash(destination / partition["file"]) != partition["sha256"]:
             raise ValueError("Import publication checksum changed")
@@ -309,6 +317,7 @@ def commit_import(
                     identifier,
                     {"source": source_hash, **({"previous": parent} if parent else {})},
                 )
+                register_import_lineage(catalog, connection, publication)
             connection.execute(
                 "INSERT INTO import_run VALUES (?,?,?,?,?)",
                 (key, workspace_id, identifier, canonical_json(result), time.time()),

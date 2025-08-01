@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import subprocess
 import sys
+import time
 from pathlib import Path
 from typing import Any
 
@@ -20,8 +21,21 @@ EXCLUDED_DIRECTORIES = {
     ".ruff_cache",
     ".cache",
     "work",
+    "docs",
 }
-SOURCE_SUFFIXES = {".py", ".ts", ".tsx", ".js", ".mjs", ".css", ".html", ".toml", ".yaml", ".yml"}
+SOURCE_SUFFIXES = {
+    ".py",
+    ".ts",
+    ".tsx",
+    ".js",
+    ".mjs",
+    ".css",
+    ".html",
+    ".svg",
+    ".toml",
+    ".yaml",
+    ".yml",
+}
 
 
 def source_manifest(repository: Path) -> dict[str, Any]:
@@ -36,6 +50,7 @@ def source_manifest(repository: Path) -> dict[str, Any]:
             "package-lock.json",
             "uv.lock",
             "Makefile",
+            ".python-version",
         }:
             files[relative.as_posix()] = file_hash(path)
     return {
@@ -50,6 +65,13 @@ def record_command(
     repository: Path, destination: Path, name: str, command: list[str]
 ) -> dict[str, Any]:
     destination.mkdir(parents=True, exist_ok=True)
+    for suffix in [".log", ".json"]:
+        previous = destination / f"{name}{suffix}"
+        if previous.exists():
+            archive = destination / "previous"
+            archive.mkdir(exist_ok=True)
+            previous.rename(archive / f"{name}-{time.time_ns()}{suffix}")
+    started = time.perf_counter()
     process = subprocess.run(
         command, cwd=repository, text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT
     )
@@ -58,6 +80,7 @@ def record_command(
     result = {
         "command": command,
         "exit_code": process.returncode,
+        "runtime_seconds": time.perf_counter() - started,
         "log": str(path),
         "sha256": file_hash(path),
     }

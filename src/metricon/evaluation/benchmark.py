@@ -9,10 +9,13 @@ import shutil
 import subprocess
 import sys
 import time
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
 import numpy as np
+import polars as pl
+from threadpoolctl import threadpool_info
 
 from metricon.evaluation.workloads import reference_checksum, write_workload
 from metricon.evaluation.experiment import environment
@@ -25,6 +28,7 @@ from metricon.storage.catalog import Catalog
 from metricon.storage.hashing import atomic_json
 from metricon.storage.lineage import source_code_hash
 from metricon.storage.query import analytical_connection
+from metricon.storage.hashing import file_hash
 
 QUERIES = {
     "accuracy": "SELECT count(*) n,sum(correct::INTEGER) successes,sum(source_sequence) index_sum FROM events",
@@ -32,6 +36,19 @@ QUERIES = {
     "skill_groups": "SELECT skill,count(*) n,sum(correct::INTEGER) successes FROM (SELECT correct,unnest(skills) skill FROM events) GROUP BY skill ORDER BY skill",
     "learner_history": "SELECT event_id,correct,source_sequence FROM events WHERE learner_id='learner-42' ORDER BY source_sequence LIMIT 100",
 }
+
+
+def measurement_sources(repository: Path) -> dict[str, str]:
+    package = repository / "src/metricon"
+    paths = [
+        *package.joinpath("ingest").glob("*.py"),
+        *package.joinpath("schema").glob("*.py"),
+        *package.joinpath("storage").glob("*.py"),
+        package / "features/history.py",
+        package / "features/materialize.py",
+        *package.joinpath("models").glob("*.py"),
+    ]
+    return {path.relative_to(package).as_posix(): file_hash(path) for path in sorted(paths)}
 
 
 def peak_rss() -> int:
@@ -65,6 +82,16 @@ def measure_worker(request: dict[str, Any]) -> dict[str, Any]:
     )
     import_seconds = time.perf_counter() - started
     import_peak = peak_rss()
+    atomic_json(
+        store / "import-measurement.json",
+        {
+            "seconds": import_seconds,
+            "peak_rss_bytes": import_peak,
+            "result": result,
+            "source_code": source_snapshot,
+            "environment": locked_environment,
+        },
+    )
     expected = request["corpus"]["reference_counts"]
     actual = {key: result["report"][key] for key in expected}
     if actual != expected:
@@ -150,6 +177,8 @@ def measure_worker(request: dict[str, Any]) -> dict[str, Any]:
         },
         "duckdb_threads": 2,
         "numeric_threads": 1,
+        "native_thread_pools": threadpool_info(),
+        "polars_threads": pl.thread_pool_size(),
         "cache_semantics": "Fresh worker and analytical connection for cold; OS page cache is not flushed. Warm repeats the query on its existing connection.",
     }
 
@@ -161,15 +190,42 @@ def benchmark(
         raise ValueError("Benchmark evidence requires at least five repetitions")
     root.mkdir(parents=True, exist_ok=True)
     records = []
+    required_sources = measurement_sources(Path(__file__).parents[3])
     for size in sizes:
         source = root / "corpora" / f"events-{size}.ndjson"
         corpus = write_workload(source, size)
         for repetition in range(repetitions):
             output = root / f"repetition-{size}-{repetition}.json"
             store = root / "stores" / f"{size}-{repetition}"
+            previous = json.loads(output.read_text()) if output.exists() else None
+            if previous is not None and (
+                "native_thread_pools" not in previous
+                or any(
+                    previous["source_code"]["files"].get(name) != checksum
+                    for name, checksum in required_sources.items()
+                )
+            ):
+                archive = root / "previous"
+                archive.mkdir(exist_ok=True)
+                output.rename(archive / f"{output.stem}-{time.time_ns()}.json")
             if output.exists():
                 result = json.loads(output.read_text())
             else:
+                if store.exists():
+                    failed = root / "failures" / f"{size}-{repetition}-{time.time_ns()}"
+                    failed.mkdir(parents=True)
+                    for item in store.rglob("*.json"):
+                        target = failed / item.relative_to(store)
+                        target.parent.mkdir(parents=True, exist_ok=True)
+                        shutil.copyfile(item, target)
+                    atomic_json(
+                        failed / "cleanup.json",
+                        {
+                            "reason": "Previous worker failed before complete measurement; retain diagnostics and manifests, recreate an empty workload store",
+                            "source_retained": str(source),
+                        },
+                    )
+                    shutil.rmtree(store)
                 request = root / "current-request.json"
                 atomic_json(
                     request,
@@ -226,6 +282,32 @@ def benchmark(
         "summaries": {},
         "measurements_are_promises": False,
     }
+    hardware_path = root / "hardware.json"
+    if hardware_path.exists():
+        summary["hardware"]["observed_profile"] = json.loads(hardware_path.read_text())
+    elif sys.platform == "darwin":
+        try:
+            summary["hardware"]["cpu_model"] = subprocess.check_output(
+                ["sysctl", "-n", "machdep.cpu.brand_string"], text=True
+            ).strip()
+            summary["hardware"]["memory_bytes"] = int(
+                subprocess.check_output(["sysctl", "-n", "hw.memsize"], text=True).strip()
+            )
+        except (subprocess.CalledProcessError, ValueError) as error:
+            summary["hardware"]["hardware_query_error"] = str(error)
+    elif hasattr(os, "sysconf"):
+        summary["hardware"]["memory_bytes"] = os.sysconf("SC_PAGE_SIZE") * os.sysconf(
+            "SC_PHYS_PAGES"
+        )
+    if not hardware_path.exists():
+        atomic_json(
+            hardware_path,
+            {
+                "captured_at": datetime.now(timezone.utc).isoformat(),
+                "method": "Runtime platform and host system queries",
+                "profile": summary["hardware"],
+            },
+        )
     for size in sizes:
         selected = [record for record in records if record["rows"] == size]
         rates = [record["rows_per_second"] for record in selected]

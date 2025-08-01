@@ -10,6 +10,21 @@ from metricon.simulation.engine import SimulationConfig, simulate
 HEADERS = {"X-Metricon-Client": "1"}
 
 
+def test_installed_package_serves_bundled_workbench(tmp_path, monkeypatch):
+    import metricon.api.app as module
+    package = tmp_path / "installed" / "metricon"
+    static = package / "web_dist"
+    static.mkdir(parents=True)
+    (static / "index.html").write_text('<html><title>Installed workbench</title></html>')
+    monkeypatch.setattr(module, "__file__", str(package / "api" / "app.py"))
+    settings = Settings(tmp_path / "installed-store")
+    assert settings.web_directory == static
+    with TestClient(create_app(settings, start_jobs=False)) as client:
+        response = client.get("/")
+        assert response.status_code == 200
+        assert "Installed workbench" in response.text
+
+
 def test_api_empty_import_job_and_artifact_contract(tmp_path):
     app = create_app(Settings(tmp_path / "api-root"))
     with TestClient(app) as client:

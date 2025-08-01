@@ -7,6 +7,7 @@ import random
 import shutil
 import subprocess
 import sys
+import statistics
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
@@ -119,6 +120,10 @@ def generated_analytics(
         size = 1 + case % 37
         for index in range(size):
             value = fixture_row(index, bool(rng.randrange(2)), f"u-{index % 3}")
+            if case % 17 == 0:
+                value["correct"] = False
+            elif case % 19 == 0:
+                value["correct"] = True
             if case % 3 == 0:
                 value.update(
                     {
@@ -131,10 +136,22 @@ def generated_analytics(
                 )
             if case % 4 == 0:
                 value.update({"duration_ms": float(index * 1000), "duration_scope": "event"})
+            if case % 5 == 0:
+                value.update(
+                    {
+                        "session_id": f"session-{index // 6}",
+                        "bundle_id": f"bundle-{index // 6}",
+                        "duration_ms": 6000.0,
+                        "duration_scope": "bundle" if index % 2 else "event",
+                    }
+                )
+            if case % 7 == 0:
+                value["order_scope"] = "question"
             values.append(value)
         shuffled = values[:]
         rng.shuffle(shuffled)
-        source = destination / "current.ndjson"
+        source = destination / "inputs" / f"case-{case}.ndjson"
+        source.parent.mkdir(exist_ok=True)
         source.write_text("\n".join(json.dumps(row) for row in shuffled))
         imported = import_file(
             catalog, workspace["id"], source, AdapterOptions("ndjson", "campaign"), chunk_size=7
@@ -162,10 +179,56 @@ def generated_analytics(
             raise AssertionError({"case": case, "reference_n": size, "actual": result})
         if result["retries"]["solved"] != len(retry_values):
             raise AssertionError("Retry censoring disagrees with independent histories")
+        if result["retries"]["censored"] != len(retries) - len(retry_values):
+            raise AssertionError("Unsolved groups are not counted as censored")
+        expected_durations = []
+        bundles_seen = set()
+        for value in values:
+            scope = value.get("duration_scope")
+            if scope == "event":
+                expected_durations.append(value["duration_ms"])
+            elif scope == "bundle":
+                key = (value["learner_id"], value["session_id"], value["bundle_id"])
+                if key not in bundles_seen:
+                    expected_durations.append(value["duration_ms"])
+                    bundles_seen.add(key)
+        if result["durations"]["n"] != len(expected_durations):
+            raise AssertionError("Known-duration denominator disagrees with independent scopes")
+        if expected_durations and (
+            result["durations"]["total_ms"] != sum(expected_durations)
+            or result["durations"]["median_ms"] != statistics.median(expected_durations)
+        ):
+            raise AssertionError("Known-duration aggregates differ from independent values")
         actual_groups = analytics.groups("question", limit=100)["rows"]
         for group in actual_groups:
             if [group["accuracy"]["n"], group["accuracy"]["successes"]] != groups[group["id"]]:
                 raise AssertionError("SQL group aggregate differs from Python reference")
+        skill_reference = {}
+        for value in values:
+            for skill in value["skills"]:
+                group = skill_reference.setdefault(skill, [0, 0])
+                group[0] += 1
+                group[1] += value["correct"]
+        for group in analytics.groups("skill", limit=100)["rows"]:
+            if [group["accuracy"]["n"], group["accuracy"]["successes"]] != skill_reference[
+                group["id"]
+            ]:
+                raise AssertionError("Skill denominators differ from independent tagged records")
+        for learner in sorted({value["learner_id"] for value in values}):
+            domains = {}
+            for value in values:
+                if value["learner_id"] != learner:
+                    continue
+                domain = value["question_id"] if value.get("order_scope") == "question" else ""
+                longest, current = domains.setdefault(domain, [0, 0])
+                current = current + 1 if value["correct"] else 0
+                domains[domain] = [max(longest, current), current]
+            actual_streaks = {
+                row["domain"]: row["longest_correct_streak"]
+                for row in analytics.streaks(learner)["domains"]
+            }
+            if actual_streaks != {key: value[0] for key, value in domains.items()}:
+                raise AssertionError("Consecutive-answer streak differs from independent history")
         lazy = (
             scan_events(catalog, imported["dataset_id"])
             .select(__import__("polars").col("correct").sum())
@@ -181,6 +244,8 @@ def generated_analytics(
                 "successes": successes,
                 "first_n": len(first),
                 "first_successes": sum(first.values()),
+                "known_duration_n": len(expected_durations),
+                "known_duration_total_ms": sum(expected_durations),
                 "source_sha256": file_hash(source),
                 "dataset_id": imported["dataset_id"],
             }

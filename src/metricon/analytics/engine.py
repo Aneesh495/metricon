@@ -2,12 +2,13 @@ from __future__ import annotations
 
 import json
 from typing import Any
+from pathlib import Path
 
 from metricon.analytics.statistics import midrank_percentile, wilson
 from metricon.schema.events import digest
-from metricon.storage.artifacts import ArtifactWriter
+from metricon.storage.artifacts import ArtifactWriter, verify_artifact
 from metricon.storage.catalog import Catalog
-from metricon.storage.hashing import atomic_json, read_json
+from metricon.storage.hashing import atomic_json, read_json, file_hash
 from metricon.storage.query import analytical_connection
 
 METRIC_DEFINITIONS = {
@@ -64,14 +65,18 @@ class Analytics:
             )[0]
             duration = _rows(
                 connection.execute("""
-                WITH eligible AS (
+                WITH bundles AS (
                   SELECT *,row_number() OVER(PARTITION BY source_namespace,learner_id,session_id,bundle_id
-                    ORDER BY source_sequence,event_id) rn FROM selected WHERE duration_ms IS NOT NULL
+                    ORDER BY source_sequence,event_id) rn FROM selected
+                    WHERE duration_ms IS NOT NULL AND duration_scope='bundle'
+                      AND session_id IS NOT NULL AND bundle_id IS NOT NULL
+                ), eligible AS (
+                  SELECT duration_ms FROM selected WHERE duration_ms IS NOT NULL AND duration_scope='event'
+                  UNION ALL SELECT duration_ms FROM bundles WHERE rn=1
                 ) SELECT count(*) n,median(duration_ms) median_ms,
                   quantile_cont(duration_ms,.25) q25_ms,quantile_cont(duration_ms,.75) q75_ms,
                   quantile_cont(duration_ms,.9) p90_ms,sum(duration_ms) total_ms
-                  FROM eligible WHERE duration_scope='event' OR
-                    (duration_scope='bundle' AND rn=1 AND session_id IS NOT NULL AND bundle_id IS NOT NULL)
+                  FROM eligible
             """)
             )[0]
             retries = _rows(
@@ -200,8 +205,11 @@ class Analytics:
               ), runs AS (
                 SELECT source_namespace,ordering_scope,failures,count(*) length FROM ordered WHERE correct
                 GROUP BY source_namespace,ordering_scope,failures
-              ) SELECT source_namespace,ordering_scope,max(length) longest_correct_streak FROM runs
-                GROUP BY source_namespace,ordering_scope ORDER BY source_namespace,ordering_scope
+              ), scopes AS (SELECT DISTINCT source_namespace,ordering_scope FROM ordered)
+              SELECT scopes.source_namespace,scopes.ordering_scope,coalesce(max(runs.length),0) longest_correct_streak
+                FROM scopes LEFT JOIN runs USING(source_namespace,ordering_scope)
+                GROUP BY scopes.source_namespace,scopes.ordering_scope
+                ORDER BY scopes.source_namespace,scopes.ordering_scope
             """,
                     [learner_id],
                 )
@@ -231,7 +239,7 @@ class Analytics:
             params.append(question_id)
         with analytical_connection(self.catalog, self.dataset_id) as connection:
             domains = connection.execute(
-                f"SELECT count(DISTINCT source_namespace || ':' || CASE WHEN order_scope='question' THEN question_id ELSE '' END) FROM events WHERE {where}",
+                f"SELECT count(DISTINCT (source_namespace,CASE WHEN order_scope='question' THEN question_id ELSE '' END)) FROM events WHERE {where}",
                 params,
             ).fetchone()[0]
             if axis == "order" and domains > 1:
@@ -314,16 +322,34 @@ class Analytics:
         }
 
     def materialize(self, parameters: dict[str, Any]) -> str:
-        key = digest([self.dataset_id, "analytics/1", parameters])
+        algorithm_hash = digest(
+            {
+                name: file_hash(path)
+                for name, path in {
+                    "engine": Path(__file__),
+                    "statistics": Path(__file__).with_name("statistics.py"),
+                    "query": Path(__file__).parents[1] / "storage" / "query.py",
+                }.items()
+            }
+        )
+        key = digest([self.dataset_id, "analytics/2", algorithm_hash, parameters])
         for artifact in self.catalog.artifacts(self.dataset_id, "analytics"):
             metadata = self.catalog.artifact(artifact["id"])["manifest"]["metadata"]
             if metadata.get("query_hash") == key:
+                if not verify_artifact(self.catalog, artifact["id"])["valid"]:
+                    raise ValueError("Cached analytical artifact checksum changed")
                 return artifact["id"]
         result = self.overview(parameters.get("learner_id"))
         with ArtifactWriter(self.catalog, "analytics", self.dataset_id) as writer:
             atomic_json(writer.path / "overview.json", result)
             return writer.publish(
-                {"query_hash": key, "parameters": parameters, "version": "analytics/1"}
+                {
+                    "query_hash": key,
+                    "parameters": parameters,
+                    "version": "analytics/2",
+                    "algorithm_hash": algorithm_hash,
+                },
+                {"analytics-source": algorithm_hash},
             )
 
     def cached_overview(self, parameters: dict[str, Any]) -> dict[str, Any]:

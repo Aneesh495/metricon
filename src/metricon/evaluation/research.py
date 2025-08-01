@@ -13,6 +13,7 @@ from metricon.ingest.pipeline import import_file
 from metricon.storage.catalog import Catalog
 from metricon.storage.hashing import atomic_json
 from metricon.storage.query import analytical_connection
+from metricon.storage.lineage import source_code_hash
 
 FIXED_SYNTHETIC_SEEDS = (17, 41, 73, 101, 137)
 
@@ -85,11 +86,20 @@ def public_research(catalog: Catalog, destination: Path) -> dict[str, Any]:
 def synthetic_research(catalog: Catalog, destination: Path) -> dict[str, Any]:
     destination.mkdir(parents=True, exist_ok=True)
     evidence = []
+    pipeline_hash = source_code_hash(Path(__file__).parents[1])["hash"]
     for seed in FIXED_SYNTHETIC_SEEDS:
         path = destination / f"seed-{seed}.json"
         if path.exists():
-            evidence.append(json.loads(path.read_text()))
-            continue
+            previous = json.loads(path.read_text())
+            run_report = json.loads(
+                (catalog.root / "artifacts" / previous["artifact_id"] / "report.json").read_text()
+            )
+            if run_report.get("source_code", {}).get("hash") == pipeline_hash:
+                evidence.append(previous)
+                continue
+            archive = destination / "previous"
+            archive.mkdir(exist_ok=True)
+            path.rename(archive / f"seed-{seed}-{previous['artifact_id']}.json")
         demo = demo_workspace(catalog, seed, learners=300, attempts=90)
         dataset = demo["workspace"]["dataset_id"]
         artifact = run_experiment(

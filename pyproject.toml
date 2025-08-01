@@ -33,6 +33,10 @@ dev = ["pytest==8.4.1", "ruff==0.12.9"]
 [tool.hatch.build.targets.wheel]
 packages = ["src/metricon"]
 
+[tool.hatch.build.targets.wheel.force-include]
+"web/dist" = "metricon/web_dist"
+"uv.lock" = "metricon/dependency.lock"
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 

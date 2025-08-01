@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 from typing import Any
+import json
 
 from metricon.storage.catalog import Catalog
 from metricon.storage.hashing import file_hash
 from metricon.storage.query import analytical_connection
+from metricon.schema.events import digest
 
 
 def dataset_audit(
@@ -13,10 +15,40 @@ def dataset_audit(
     dataset = catalog.dataset(dataset_id)
     manifest = dataset["manifest"]
     partition_errors = []
+    source_errors = []
     if verify_checksums:
+        current = dataset
+        visited = set()
+        while current is not None:
+            if current["id"] in visited:
+                raise ValueError("Dataset ancestry contains a cycle")
+            visited.add(current["id"])
+            current_manifest = current["manifest"]
+            directory = catalog.root / "datasets" / current["id"]
+            original = directory / f"original.{current_manifest['source']['format']}"
+            disk_manifest = directory / "manifest.json"
+            if (
+                not original.is_file()
+                or file_hash(original) != current_manifest["source"]["sha256"]
+            ):
+                source_errors.append(str(original.relative_to(catalog.root)))
+            if (
+                not disk_manifest.is_file()
+                or json.loads(disk_manifest.read_text()) != current_manifest
+                or digest(
+                    {key: value for key, value in current_manifest.items() if key != "partitions"}
+                )
+                != current["id"]
+            ):
+                source_errors.append(str(disk_manifest.relative_to(catalog.root)))
+            current = catalog.dataset(current["parent_id"]) if current["parent_id"] else None
         for partition in manifest["partitions"]:
-            path = catalog.root / partition["path"]
-            if not path.is_file() or file_hash(path) != partition["sha256"]:
+            path = (catalog.root / partition["path"]).resolve()
+            if (
+                not path.is_relative_to(catalog.root)
+                or not path.is_file()
+                or file_hash(path) != partition["sha256"]
+            ):
                 partition_errors.append(partition["path"])
     with analytical_connection(catalog, dataset_id) as connection:
         row_count, distinct, known, unknown, shifted = connection.execute("""
@@ -54,9 +86,12 @@ def dataset_audit(
         "row_count": row_count,
         "manifest_row_count": manifest["row_count"],
         "unique_identities": distinct,
-        "valid": row_count == distinct == manifest["row_count"] and not partition_errors,
+        "valid": row_count == distinct == manifest["row_count"]
+        and not partition_errors
+        and not source_errors,
         "checksums_verified": verify_checksums,
         "invalid_partitions": partition_errors,
+        "invalid_source_manifests": source_errors,
         "known_timestamps": known,
         "unknown_timestamps": unknown,
         "shifted_timestamps": shifted,

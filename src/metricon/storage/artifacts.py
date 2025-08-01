@@ -10,6 +10,8 @@ from typing import Any, Callable, Iterator
 
 from metricon.storage.catalog import Catalog
 from metricon.storage.hashing import artifact_identity, atomic_json, file_hash, sync_directory
+from metricon.schema.events import digest
+import json
 
 
 @contextlib.contextmanager
@@ -92,8 +94,19 @@ def verify_artifact(catalog: Catalog, identifier: str) -> dict[str, Any]:
     manifest = catalog.artifact(identifier)["manifest"]
     directory = catalog.root / "artifacts" / identifier
     errors = []
+    if digest(manifest) != identifier:
+        errors.append("artifact identity")
+    if (
+        not (directory / "artifact.json").is_file()
+        or json.loads((directory / "artifact.json").read_text()) != manifest
+    ):
+        errors.append("artifact manifest")
     for name, expected in manifest["files"].items():
-        path = directory / name
-        if not path.is_file() or file_hash(path) != expected:
+        path = (directory / name).resolve()
+        if (
+            not path.is_relative_to(directory.resolve())
+            or not path.is_file()
+            or file_hash(path) != expected
+        ):
             errors.append(name)
     return {"id": identifier, "valid": not errors, "invalid_files": errors}

@@ -121,6 +121,8 @@ def main() -> None:
         result = execute(arguments)
         if result is not None:
             print(json.dumps(result, indent=2, ensure_ascii=False, allow_nan=False))
+            if isinstance(result, dict) and result.get("valid") is False:
+                raise SystemExit(1)
     except (ValueError, KeyError, RuntimeError) as error:
         print(f"metricon: {error}", file=sys.stderr)
         raise SystemExit(1) from error

@@ -52,7 +52,10 @@ class Settings:
     ):
         self.root = (root or Path(os.environ.get("METRICON_HOME", ".metricon"))).resolve()
         self.maximum_upload_bytes = maximum_upload_bytes
-        self.web_directory = web_directory or Path(__file__).parents[3] / "web" / "dist"
+        packaged = Path(__file__).parents[1] / "web_dist"
+        self.web_directory = web_directory or (
+            packaged if packaged.is_dir() else Path(__file__).parents[3] / "web" / "dist"
+        )
 
 
 def create_app(settings: Settings | None = None, start_jobs: bool = True) -> FastAPI:

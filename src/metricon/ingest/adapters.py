@@ -11,7 +11,7 @@ import pyarrow.parquet as pq
 
 from metricon.schema.events import AttemptEvent, Provenance, digest
 
-ADAPTER_VERSION = "adapters/1"
+ADAPTER_VERSION = "adapters/2"
 
 
 @dataclass(frozen=True)
@@ -124,19 +124,89 @@ def iter_parquet(path: Path, options: AdapterOptions) -> Iterator[RawRecord]:
 
 
 def iter_json(path: Path, options: AdapterOptions) -> Iterator[RawRecord]:
+    started = ended = in_string = escaped = False
+    depth = 0
+    buffer = bytearray()
+    oversized = False
+    index = 0
+    after_comma = False
+
+    def item() -> RawRecord:
+        nonlocal index
+        index += 1
+        if oversized:
+            return RawRecord(index, None, "Canonical JSON event exceeds configured byte bound")
+        try:
+            value = json.loads(buffer)
+        except (ValueError, UnicodeDecodeError) as error:
+            raise ValueError(f"Malformed canonical JSON array at item {index}: {error}") from error
+        return (
+            RawRecord(index, value)
+            if isinstance(value, dict)
+            else RawRecord(index, None, "Canonical JSON must contain an array of objects")
+        )
+
     with path.open("rb") as handle:
-        for index, value in enumerate(ijson.items(handle, "item", use_float=True), 1):
-            if isinstance(value, dict):
-                yield RawRecord(index, value)
-            else:
-                yield RawRecord(index, None, "Canonical JSON must contain an array of objects")
+        for chunk in iter(lambda: handle.read(65536), b""):
+            for byte in chunk:
+                if not started:
+                    if byte in b" \t\r\n":
+                        continue
+                    if byte != 91:
+                        raise ValueError("Canonical JSON root must be an array")
+                    started = True
+                    continue
+                if ended:
+                    if byte not in b" \t\r\n":
+                        raise ValueError("Trailing content after canonical JSON array")
+                    continue
+                if (
+                    byte in b" \t\r\n"
+                    and not buffer
+                    and not oversized
+                    and depth == 0
+                    and not in_string
+                ):
+                    continue
+                if not in_string and depth == 0 and byte in (44, 93):
+                    if buffer.strip() or oversized:
+                        yield item()
+                        buffer.clear()
+                        oversized = False
+                    elif byte == 44 or after_comma:
+                        raise ValueError("Empty or trailing canonical JSON array item")
+                    after_comma = byte == 44
+                    ended = byte == 93
+                    continue
+                if not oversized:
+                    buffer.append(byte)
+                    if len(buffer) > options.max_event_bytes:
+                        buffer.clear()
+                        oversized = True
+                if in_string:
+                    if escaped:
+                        escaped = False
+                    elif byte == 92:
+                        escaped = True
+                    elif byte == 34:
+                        in_string = False
+                elif byte == 34:
+                    in_string = True
+                elif byte in (123, 91):
+                    depth += 1
+                elif byte in (125, 93):
+                    depth -= 1
+                    if depth < 0:
+                        raise ValueError("Unbalanced canonical JSON item")
+    if not ended or in_string or depth:
+        raise ValueError("Incomplete canonical JSON array")
 
 
 def iter_legacy(path: Path, options: AdapterOptions) -> Iterator[RawRecord]:
     builder: ijson.ObjectBuilder | None = None
     prefix_in_progress: str | None = None
     question: str | None = None
-    sequences: dict[str, int] = {}
+    sequence = 0
     index = 0
     size = 0
     with path.open("rb") as handle:
@@ -144,8 +214,10 @@ def iter_legacy(path: Path, options: AdapterOptions) -> Iterator[RawRecord]:
             if builder is None and kind == "map_key":
                 if prefix == "" and value != "LocalSubmissions":
                     question = str(value)
+                    sequence = 0
                 elif prefix == "LocalSubmissions":
                     question = str(value)
+                    sequence = 0
             if builder is None and kind == "start_map" and prefix.endswith(".attempts.item"):
                 builder = ijson.ObjectBuilder()
                 prefix_in_progress = prefix
@@ -160,8 +232,6 @@ def iter_legacy(path: Path, options: AdapterOptions) -> Iterator[RawRecord]:
                     attempt = builder.value
                     if question is None:
                         raise ValueError("Legacy attempt lacks question key")
-                    sequence = sequences.get(question, 0)
-                    sequences[question] = sequence + 1
                     identifier = attempt.get("id")
                     quality = (
                         "stable"
@@ -190,6 +260,7 @@ def iter_legacy(path: Path, options: AdapterOptions) -> Iterator[RawRecord]:
                     )
                     builder = None
                     prefix_in_progress = None
+                    sequence += 1
     if builder is not None:
         raise ValueError("Incomplete legacy attempt")
 

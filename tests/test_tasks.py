@@ -79,3 +79,20 @@ def test_process_experiment_publishes_without_worker_metadata_writes(catalog):
         assert catalog.ancestors(result["result_id"])
     finally:
         coordinator.close()
+
+
+def test_partial_progress_write_does_not_crash_coordinator(catalog, tmp_path):
+    from types import SimpleNamespace
+    workspace = demo_workspace(catalog, learners=2, attempts=10)
+    coordinator = JobCoordinator(catalog)
+    task = coordinator.submit(workspace["workspace"]["id"], "analytics", {})
+    path = tmp_path / "progress.ndjson"
+    path.write_text('{"progress":0.3,"message":"chunk')
+    running = SimpleNamespace(directory=tmp_path, offset=0)
+    coordinator._progress(task["id"], running)
+    assert running.offset == 0
+    with path.open("a") as handle:
+        handle.write(' complete"}\n')
+    coordinator._progress(task["id"], running)
+    assert coordinator.get(task["id"])["progress"] == 0.3
+    assert coordinator.get(task["id"])["message"] == "chunk complete"

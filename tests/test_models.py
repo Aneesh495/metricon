@@ -100,6 +100,7 @@ def test_bkt_coupled_objective_matches_independent_scalar_reference():
         HierarchicalBetaBinomial,
         lambda: BKT(starts=1, max_iterations=10),
         lambda: IRT(1, minimum_item_responses=5),
+        lambda: IRT(2, minimum_item_responses=5),
     ],
 )
 def test_model_serialization(factory, rows, tmp_path):
@@ -124,6 +125,32 @@ def test_irt_2pl_identifiability(rows):
     assert abs(ability.mean()) < 1e-8
     assert abs(ability.std() - 1) < 1e-5
     assert all(0.25 <= item["discrimination"] <= 3.000001 for item in model.items.values())
+
+
+@pytest.mark.parametrize("parameters", [1, 2])
+def test_irt_optimizer_gradient_matches_independent_central_differences(
+    rows, monkeypatch, parameters
+):
+    import metricon.models.irt as module
+    from scipy.optimize import minimize
+
+    checked = []
+
+    def inspect_objective(objective, initial, **kwargs):
+        values = initial + np.linspace(-0.01, 0.01, len(initial))
+        _, gradient = objective(values)
+        numeric = []
+        for index in range(len(values)):
+            delta = np.zeros(len(values))
+            delta[index] = 1e-6
+            numeric.append((objective(values + delta)[0] - objective(values - delta)[0]) / 2e-6)
+        np.testing.assert_allclose(gradient, numeric, atol=2e-5, rtol=2e-5)
+        checked.append(True)
+        return minimize(objective, initial, **kwargs)
+
+    monkeypatch.setattr(module, "minimize", inspect_objective)
+    IRT(parameters, minimum_item_responses=5, max_iterations=50).fit(rows)
+    assert checked == [True]
 
 
 def test_logistic_warm_serialized_state(rows, tmp_path):

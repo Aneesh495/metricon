@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import contextlib
+import tempfile
 from typing import Iterator
 
 import duckdb
@@ -19,9 +20,11 @@ def analytical_connection(
     connection = duckdb.connect(":memory:")
     connection.execute("SET memory_limit=?", (memory_limit,))
     connection.execute("SET threads=2")
+    connection.execute("SET preserve_insertion_order=false")
     temp = catalog.root / "query-temp"
     temp.mkdir(exist_ok=True)
-    connection.execute("SET temp_directory=?", (str(temp),))
+    spill = tempfile.TemporaryDirectory(prefix="query-", dir=temp)
+    connection.execute("SET temp_directory=?", (spill.name,))
     if paths:
         connection.read_parquet(paths, union_by_name=True).create_view("events")
     else:
@@ -32,6 +35,7 @@ def analytical_connection(
         yield connection
     finally:
         connection.close()
+        spill.cleanup()
 
 
 def scan_events(catalog: Catalog, dataset_id: str) -> pl.LazyFrame:

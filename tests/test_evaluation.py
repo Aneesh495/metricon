@@ -8,6 +8,8 @@ from metricon.evaluation.experiment import ExperimentConfig, run_experiment
 from metricon.ingest.demo import demo_workspace
 from metricon.storage.artifacts import verify_artifact
 from metricon.storage.hashing import read_json
+from metricon.evaluation.evidence import evidence_manifest, verify_files
+from metricon.evaluation.acceptance import verify_evidence
 
 
 def test_splits_no_session_or_learner_leakage(rows):
@@ -73,3 +75,28 @@ def test_equivalent_split_assignments_in_distinct_datasets_have_scoped_lineage(c
     assert first_run != second_run
     assert catalog.ancestors(first_run)
     assert catalog.ancestors(second_run)
+
+
+def test_verification_rejects_missing_and_changed_evidence(tmp_path):
+    with pytest.raises(ValueError, match="missing"):
+        verify_evidence(tmp_path)
+    file = tmp_path / "measured.json"
+    file.write_text('{"observed": 4}')
+    manifest = evidence_manifest([file], tmp_path)
+    assert verify_files(tmp_path, manifest) == []
+    file.write_text('{"observed": 5}')
+    assert verify_files(tmp_path, manifest)
+    file.unlink()
+    assert verify_files(tmp_path, manifest)
+
+
+def test_artifact_manifest_and_payload_tampering_fail(catalog):
+    from metricon.storage.artifacts import ArtifactWriter
+
+    workspace = demo_workspace(catalog, learners=2, attempts=10)
+    with ArtifactWriter(catalog, "inspection", workspace["workspace"]["dataset_id"]) as writer:
+        (writer.path / "results.json").write_text('{"n": 10}')
+        identifier = writer.publish({"method": "observed"})
+    assert verify_artifact(catalog, identifier)["valid"]
+    (catalog.root / "artifacts" / identifier / "artifact.json").write_text("{}")
+    assert not verify_artifact(catalog, identifier)["valid"]

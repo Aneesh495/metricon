@@ -5,13 +5,13 @@ METRICON := .venv/bin/metricon --root $(METRICON_ROOT)
 
 .PHONY: bootstrap dev demo test test-integration test-e2e dataset-public experiment benchmark acceptance verify
 bootstrap:
-	uv sync --locked
+	uv sync --locked --python 3.13
 	npm ci
-	uv build --wheel --out-dir $(METRICON_ROOT)/build
 	npm run build
+	uv build --wheel --out-dir $(METRICON_ROOT)/build
 
 dev:
-	$(PYTHON) scripts/dev.py
+	METRICON_HOME=$(METRICON_ROOT) $(PYTHON) scripts/dev.py
 
 demo:
 	$(METRICON) demo

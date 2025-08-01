@@ -15,7 +15,7 @@ Canonical schema; streaming adapters; strict validation and quarantine; immutabl
 ## Verified commands
 
 - `ruff check src tests`: passed.
-- `pytest -q`: 62 passed. One upstream Starlette/AnyIO deprecation warning remains visible.
+- `pytest -q`: 84 passed. One upstream Starlette/AnyIO deprecation warning remains visible.
 - `npm run check`: passed strict TypeScript checks.
 - `npm run test:web`: 3 passed.
 - `npm run build`: passed.
@@ -27,7 +27,7 @@ Process tasks now enforce read-only worker metadata, coordinator publication, co
 
 ## Incomplete verification
 
-scientific plot validation; benchmark repetitions; browser workflows and screenshots; final public-data comparison; synchronized specifications and runbooks; skeptical review; final acceptance and independent evidence verification.
+Final source-frozen benchmark/research reproduction, scientific figure review, measured reports, command walkthrough, final acceptance and independent evidence verification.
 
 ## Next action
 
@@ -42,3 +42,19 @@ The actual browser workflows exposed coordinator ownership and dataset-scoped sp
 The first measured ten-million-event import used 391,495,680 bytes of peak RSS but took 1,763 seconds. Its raw results remain retained as a baseline. Binary full-digest identity shards replace the random text-key staging tree; independent generated imports and all 100 interruption cases passed again. The full five-repetition scale campaign is running against the revised implementation. Throughput targets remain measurements, not asserted results.
 
 Scientific plot generation and frozen cross-model comparison ran on the preliminary research artifact. Browser verification remains incomplete while the remaining policy, cancellation, export and responsive flows are exercised. No completion claim has been made.
+
+## Scientific and product verification checkpoint
+
+All eight end-to-end browser workflows passed, including import/rejections, actual fitting, run comparison/calibration, saved parameter replay, planning, misspecified simulation, running cancellation, export, lineage integrity, keyboard tables and mobile layout. The wrapper now records results at the same evidence path as screenshots. A long immutable dataset ID previously overflowed mobile notices; wrapping is fixed and verified.
+
+All five fixed synthetic workloads met their predictive target: BKT test log loss improved 33 to 37 percent relative to the constant baseline on their known process. The completed EdNet run selected logistic C=1 on validation. It scored approximately 0.549 test log loss; BKT approximately 0.598; the constant approximately 0.627. Both cohort IRT models fitted but scored worse than the constant. No test tuning or baseline omission was used. Final source-frozen reproduction still follows review.
+
+The revised ten-million-event import completed in 521 seconds at 1.29 GB peak import RSS. Its feature materialization completed after an unnecessary window was replaced by a spill-capable ordering query. Failed worker logs and preliminary source snapshots are retained. Remaining raw repetitions and native thread-pool inspection are still running.
+
+A skeptical parsing/recovery pass replaced unbounded canonical JSON object construction with bounded byte framing, removed legacy per-question parser dictionary growth, added integer storage bounds, and protected coordinator progress reads from partial lines. Independent fitting scopes and deliberately planted feature/split leakage were audited on actual saved runs.
+
+## Evidence and packaging review
+
+Locked bootstrap built the React client and a wheel containing that client and the dependency lock. An extracted installed wheel served the workbench. The eight browser workflows and independent import/recovery campaigns passed. The expanded analytical campaign passed 1,000 datasets including explicit all-correct/all-incorrect histories, skill denominators, mixed event/bundle durations and streaks.
+
+A mixed duration scope exposed a missing bundle aggregate, now corrected with an independent regression. Cached aggregates are versioned by query parameters and implementation hashes and reject altered payloads. Source/dataset manifests and exact authorized preprocessing partitions are checked during verification. Raw benchmark records missing native thread measurements are retained and remeasured. The development runner now propagates child startup failures and cleans up its own process groups.
