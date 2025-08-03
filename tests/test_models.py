@@ -11,6 +11,37 @@ from metricon.models.hierarchical import HierarchicalBetaBinomial
 from metricon.models.irt import IRT, IRTEligibilityError
 
 
+@pytest.mark.parametrize("model", [ItemPrior, HierarchicalBetaBinomial])
+def test_delimiters_cannot_merge_item_model_keys(model, tmp_path):
+    rows = [
+        event(i, source_namespace="source:part", question="q", correct=True).arrow_row()
+        for i in range(20)
+    ] + [
+        event(i + 20, source_namespace="source", question="part:q", correct=False).arrow_row()
+        for i in range(20)
+    ]
+    fitted = model().fit(rows)
+    probabilities = fitted.predict([rows[0], rows[-1]])
+    assert probabilities[0] > 0.8 and probabilities[1] < 0.2
+    path = tmp_path / "qualified.model.json"
+    save_model(path, fitted)
+    restored = load_model(path)
+    assert restored.parameters() == fitted.parameters()
+    np.testing.assert_allclose(restored.predict([rows[0], rows[-1]]), probabilities)
+
+
+def test_legacy_item_model_retains_its_saved_key_encoding():
+    fitted = ItemPrior().fit([event(0).arrow_row()])
+    payload = fitted.parameters()
+    payload.pop("identity_encoding")
+    payload["items"] = {"test:q1": (1, 1)}
+    restored = ItemPrior.restore(payload)
+    assert restored.identity_encoding == "colon/legacy"
+    assert restored.predict([event(1).arrow_row()])[0] == pytest.approx(
+        fitted.predict([event(1).arrow_row()])[0]
+    )
+
+
 def scalar_reference(outcomes, initial, learning, slip, guess, forgetting):
     k = initial
     results = []

@@ -34,7 +34,7 @@ from metricon.models.baselines import GlobalBaseline, ItemPrior, LogisticHistory
 from metricon.models.bkt import BKT
 from metricon.models.hierarchical import HierarchicalBetaBinomial
 from metricon.models.irt import IRT, IRTEligibilityError
-from metricon.schema.events import digest
+from metricon.schema.events import digest, canonical_json
 from metricon.storage.artifacts import ArtifactWriter
 from metricon.storage.catalog import Catalog
 from metricon.storage.hashing import atomic_json, file_hash
@@ -338,7 +338,7 @@ def _run_fold(
     predictions: dict[str, np.ndarray] = {}
     raw_rows = []
     y_validation, y_test = labels(validation), labels(test)
-    learners = [row["source_namespace"] + ":" + row["learner_id"] for row in test]
+    learners = [canonical_json([row["source_namespace"], row["learner_id"]]) for row in test]
     for model_index, (name, factory) in enumerate(models.items()):
         if cancelled and cancelled():
             raise RuntimeError("Experiment cancelled before publication")
@@ -400,6 +400,10 @@ def _run_fold(
                     {
                         "identity": row["identity"],
                         "learner_id": row["learner_id"],
+                        "source_namespace": row["source_namespace"],
+                        "learner_cluster": canonical_json(
+                            [row["source_namespace"], row["learner_id"]]
+                        ),
                         "question_id": row["question_id"],
                         "skills": list(row["skills"]),
                         "partition": partition,

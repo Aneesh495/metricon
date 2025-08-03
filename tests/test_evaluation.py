@@ -100,3 +100,35 @@ def test_artifact_manifest_and_payload_tampering_fail(catalog):
     assert verify_artifact(catalog, identifier)["valid"]
     (catalog.root / "artifacts" / identifier / "artifact.json").write_text("{}")
     assert not verify_artifact(catalog, identifier)["valid"]
+
+
+def test_saved_comparisons_preserve_source_qualified_learner_clusters(catalog, tmp_path):
+    import json
+    from conftest import event
+    from metricon.ingest.adapters import AdapterOptions
+    from metricon.ingest.pipeline import import_file
+    from metricon.evaluation.comparison import compare_runs
+
+    workspace = catalog.create_workspace("qualified learners")
+    for namespace, learner in [("source:part", "q"), ("source", "part:q")]:
+        path = tmp_path / "source.ndjson"
+        path.write_text(
+            "\n".join(
+                json.dumps(
+                    event(
+                        i, source_namespace=namespace, learner=learner, correct=i % 2 == 0
+                    ).model_dump(mode="json")
+                )
+                for i in range(20)
+            )
+        )
+        imported = import_file(catalog, workspace["id"], path, AdapterOptions("ndjson", namespace))
+    artifact = run_experiment(
+        catalog,
+        imported["dataset_id"],
+        ExperimentConfig(families=("global",), bootstrap_repetitions=20, ablations=False),
+    )
+    comparison = compare_runs(catalog, artifact, artifact, "global", "global", repetitions=20)
+    assert comparison["paired"]["clusters"] == 2
+    assert comparison["paired"]["lower"] == comparison["paired"]["upper"] == 0
+    assert comparison["left"]["intervals"]["clusters"] == 2

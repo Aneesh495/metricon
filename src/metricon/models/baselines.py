@@ -9,7 +9,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import MaxAbsScaler
 
 from metricon.features.history import FeatureEncoder, HistoryFeatures, domain, labels, units
-from metricon.models.base import probabilities
+from metricon.models.base import probabilities, entity_key
 
 
 class GlobalBaseline:
@@ -58,12 +58,14 @@ class ItemPrior:
         self.strength = strength
         self.global_model = GlobalBaseline()
         self.items: dict[str, tuple[int, int]] = {}
+        self.identity_encoding = "json-tuple/1"
 
     def fit(self, rows: list[dict[str, Any]]) -> ItemPrior:
         self.global_model.fit(rows)
+        self.identity_encoding = "json-tuple/1"
         values: dict[str, list[int]] = defaultdict(lambda: [0, 0])
         for row in rows:
-            key = row["source_namespace"] + ":" + row["question_id"]
+            key = entity_key(row, "question_id", self.identity_encoding)
             values[key][0] += int(row["correct"])
             values[key][1] += 1
         self.items = {key: tuple(value) for key, value in values.items()}
@@ -73,7 +75,7 @@ class ItemPrior:
         prior = self.global_model.probability
         result = []
         for row in rows:
-            key = row["source_namespace"] + ":" + row["question_id"]
+            key = entity_key(row, "question_id", self.identity_encoding)
             successes, n = self.items.get(key, (0, 0))
             result.append((successes + self.strength * prior) / (n + self.strength))
         return probabilities(result)
@@ -81,6 +83,7 @@ class ItemPrior:
     def parameters(self) -> dict[str, Any]:
         return {
             "family": "item_prior",
+            "identity_encoding": self.identity_encoding,
             "strength": self.strength,
             "global": self.global_model.parameters(),
             "items": self.items,
@@ -89,6 +92,7 @@ class ItemPrior:
     @classmethod
     def restore(cls, payload: dict[str, Any]) -> ItemPrior:
         model = cls(payload["strength"])
+        model.identity_encoding = payload.get("identity_encoding", "colon/legacy")
         model.global_model = GlobalBaseline.restore(payload["global"])
         model.items = {key: tuple(value) for key, value in payload["items"].items()}
         return model

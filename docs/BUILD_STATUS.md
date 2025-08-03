@@ -58,3 +58,7 @@ A skeptical parsing/recovery pass replaced unbounded canonical JSON object const
 Locked bootstrap built the React client and a wheel containing that client and the dependency lock. An extracted installed wheel served the workbench. The eight browser workflows and independent import/recovery campaigns passed. The expanded analytical campaign passed 1,000 datasets including explicit all-correct/all-incorrect histories, skill denominators, mixed event/bundle durations and streaks.
 
 A mixed duration scope exposed a missing bundle aggregate, now corrected with an independent regression. Cached aggregates are versioned by query parameters and implementation hashes and reject altered payloads. Source/dataset manifests and exact authorized preprocessing partitions are checked during verification. Raw benchmark records missing native thread measurements are retained and remeasured. The development runner now propagates child startup failures and cleans up its own process groups.
+
+## Final runner and identity review
+
+Acceptance exposed Vitest discovering the Playwright suite. Unit discovery now targets source unit files; all eight browser workflows remain in the separate Playwright runner. The failed command log is retained. Item prior and hierarchical keys now use canonical source/item tuples; saved legacy encodings retain compatibility. Raw predictions retain qualified learner clusters so paired comparisons cannot merge delimiter-containing identifiers. Focused fitting, serialization and comparison checks pass.

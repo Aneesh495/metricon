@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Any
 
 import duckdb
+import pyarrow.parquet as pq
 
 from metricon.evaluation.metrics import paired_comparison
 from metricon.storage.artifacts import verify_artifact
@@ -15,10 +16,11 @@ def read_prediction_rows(
     root: Path, artifact: str, model: str, fold: int = 0
 ) -> list[dict[str, Any]]:
     path = root / "artifacts" / artifact / f"fold-{fold}" / "predictions.parquet"
+    cluster = "learner_cluster" if "learner_cluster" in pq.read_schema(path).names else "learner_id"
     with duckdb.connect(":memory:") as connection:
         return (
             connection.execute(
-                "SELECT identity,learner_id,correct,probability FROM read_parquet(?) WHERE model=? AND partition='test' ORDER BY identity",
+                f"SELECT identity,learner_id,{cluster} AS learner_cluster,correct,probability FROM read_parquet(?) WHERE model=? AND partition='test' ORDER BY identity",
                 [str(path), model],
             )
             .fetch_arrow_table()
@@ -56,7 +58,7 @@ def compare_runs(
                 "configuration": report["configuration"],
                 "test": result["test"],
                 "calibrated_test": result.get("calibrated_test"),
-                "intervals": result.get("intervals"),
+                "intervals": result.get("cluster_intervals"),
                 "source_hash": report.get("source_code", {}).get("hash"),
             }
         )
@@ -66,15 +68,15 @@ def compare_runs(
     if identical_dataset and identical_split:
         a = read_prediction_rows(catalog.root, left, left_model, fold)
         b = read_prediction_rows(catalog.root, right, right_model, fold)
-        if [(row["identity"], row["correct"], row["learner_id"]) for row in a] != [
-            (row["identity"], row["correct"], row["learner_id"]) for row in b
+        if [(row["identity"], row["correct"], row["learner_cluster"]) for row in a] != [
+            (row["identity"], row["correct"], row["learner_cluster"]) for row in b
         ]:
             raise ValueError("Nominally identical splits contain different target rows")
         paired = paired_comparison(
             [row["correct"] for row in a],
             [row["probability"] for row in a],
             [row["probability"] for row in b],
-            [row["learner_id"] for row in a],
+            [row["learner_cluster"] for row in a],
             repetitions,
             seed,
         )

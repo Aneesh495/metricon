@@ -6,9 +6,18 @@ from typing import Any, Protocol
 import numpy as np
 
 from metricon.storage.hashing import atomic_json, read_json
+from metricon.schema.events import canonical_json
 
 MODEL_VERSION = "models/1"
 EPSILON = 1e-9
+
+
+def entity_key(row: dict[str, Any], field: str, encoding: str = "json-tuple/1") -> str:
+    if encoding == "json-tuple/1":
+        return canonical_json([row["source_namespace"], row[field]])
+    if encoding == "colon/legacy":
+        return row["source_namespace"] + ":" + row[field]
+    raise ValueError("Unsupported saved identifier encoding")
 
 
 def probabilities(values: Any) -> np.ndarray:

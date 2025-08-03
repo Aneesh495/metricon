@@ -8,7 +8,7 @@ from scipy.optimize import minimize
 from scipy.special import betaln, gammaln
 
 from metricon.analytics.statistics import beta_summary
-from metricon.models.base import probabilities
+from metricon.models.base import probabilities, entity_key
 
 
 class HierarchicalBetaBinomial:
@@ -21,15 +21,17 @@ class HierarchicalBetaBinomial:
         self.beta = 1.0
         self.counts: dict[str, tuple[int, int]] = {}
         self.diagnostics: dict[str, Any] = {}
+        self.identity_encoding = "json-tuple/1"
 
     def groups(self, row: dict[str, Any]) -> list[str]:
         return (
-            [row["source_namespace"] + ":" + row["question_id"]]
+            [entity_key(row, "question_id", self.identity_encoding)]
             if self.dimension == "question"
             else list(row["skills"])
         )
 
     def fit(self, rows: list[dict[str, Any]]) -> HierarchicalBetaBinomial:
+        self.identity_encoding = "json-tuple/1"
         groups: dict[str, list[int]] = defaultdict(lambda: [0, 0])
         for row in rows:
             for key in self.groups(row):
@@ -88,6 +90,7 @@ class HierarchicalBetaBinomial:
     def parameters(self) -> dict[str, Any]:
         return {
             "family": "hierarchical",
+            "identity_encoding": self.identity_encoding,
             "dimension": self.dimension,
             "shrinkage": self.shrinkage,
             "alpha": self.alpha,
@@ -99,6 +102,7 @@ class HierarchicalBetaBinomial:
     @classmethod
     def restore(cls, payload: dict[str, Any]) -> HierarchicalBetaBinomial:
         model = cls(payload["dimension"], payload["shrinkage"])
+        model.identity_encoding = payload.get("identity_encoding", "colon/legacy")
         model.alpha, model.beta = payload["alpha"], payload["beta"]
         model.counts = {key: tuple(value) for key, value in payload["counts"].items()}
         model.diagnostics = payload["diagnostics"]
