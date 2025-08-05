@@ -4,6 +4,7 @@ import pytest
 
 from conftest import event
 from metricon.analytics.engine import Analytics
+from metricon.analytics.sessions import sessions
 from metricon.ingest.adapters import AdapterOptions
 from metricon.ingest.pipeline import import_file
 from metricon.quality.audit import dataset_audit
@@ -37,6 +38,9 @@ def test_mixed_duration_scopes_preserve_one_bundle_and_each_event(catalog, tmp_p
     assert duration["n"] == 3
     assert duration["total_ms"] == 6000
     assert duration["median_ms"] == 1000
+    session = sessions(catalog, dataset)["rows"][0]
+    assert session["known_duration_ms"] == 6000
+    assert session["duration_observations"] == 2
 
 
 def test_all_incorrect_history_has_zero_streak_and_unknown_empty_group(catalog, tmp_path):

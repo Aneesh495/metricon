@@ -62,3 +62,5 @@ A mixed duration scope exposed a missing bundle aggregate, now corrected with an
 ## Final runner and identity review
 
 Acceptance exposed Vitest discovering the Playwright suite. Unit discovery now targets source unit files; all eight browser workflows remain in the separate Playwright runner. The failed command log is retained. Item prior and hierarchical keys now use canonical source/item tuples; saved legacy encodings retain compatibility. Raw predictions retain qualified learner clusters so paired comparisons cannot merge delimiter-containing identifiers. Focused fitting, serialization and comparison checks pass.
+
+The duration review also covered session tables. Their bundle ranking now separates event, bundle and missing duration scopes. The same independent mixed-scope fixture checks both overview and session totals. Acceptance was stopped during review, with partial raw evidence retained; the final campaign will use the corrected source.

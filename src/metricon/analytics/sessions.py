@@ -26,7 +26,7 @@ def sessions(
         cursor = connection.execute(
             f"""WITH duration AS (
             SELECT source_namespace,learner_id,session_id,bundle_id,duration_scope,duration_ms,
-                row_number() OVER(PARTITION BY source_namespace,learner_id,session_id,bundle_id ORDER BY source_sequence,event_id) bundle_rank
+                row_number() OVER(PARTITION BY source_namespace,learner_id,session_id,bundle_id,duration_scope,(duration_ms IS NULL) ORDER BY source_sequence,event_id) bundle_rank
             FROM events {condition}
         ), times AS (
             SELECT source_namespace,learner_id,session_id,
