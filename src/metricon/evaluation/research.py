@@ -94,7 +94,11 @@ def synthetic_research(catalog: Catalog, destination: Path) -> dict[str, Any]:
             run_report = json.loads(
                 (catalog.root / "artifacts" / previous["artifact_id"] / "report.json").read_text()
             )
-            if run_report.get("source_code", {}).get("hash") == pipeline_hash:
+            artifact = catalog.artifact(previous["artifact_id"])
+            if run_report.get("source_code", {}).get("hash") == pipeline_hash and (
+                artifact["manifest"]["files"].get("dependency.lock")
+                == run_report["environment"]["lock_sha256"]
+            ):
                 evidence.append(previous)
                 continue
             archive = destination / "previous"

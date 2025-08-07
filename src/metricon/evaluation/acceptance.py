@@ -140,6 +140,8 @@ def acceptance(root: Path) -> dict[str, Any]:
     paths += sorted((root / "benchmark").glob("repetition-*.json"))
     paths += sorted((root / "benchmark").glob("worker-*.log"))
     paths += sorted((root / "benchmark/corpora").glob("*.manifest.json"))
+    paths += sorted((root / "benchmark/fitting").glob("fit-*.json"))
+    paths += sorted((root / "benchmark/fitting").glob("fit-*.log"))
     paths += sorted((destination / "analytics/inputs").glob("*.ndjson"))
     paths += [destination / "ingestion/cases.ndjson"]
     paths += sorted((destination / "recovery").glob("interruption-*.log"))
@@ -204,6 +206,9 @@ def assess(root: Path, census: dict[str, Any]) -> dict[str, bool]:
         manifest = catalog.artifact(identifier)["manifest"]
         if "fold-0/preprocessing.json" not in manifest["files"]:
             raise ValueError("Research run lacks preprocessing fitting scopes")
+        report = read(catalog.root / "artifacts" / identifier / "report.json")
+        if manifest["files"].get("dependency.lock") != report["environment"]["lock_sha256"]:
+            raise ValueError("Research run lacks its exact dependency lock file")
     return {
         "install_build": all(
             (destination / "commands" / f"{name}.json").is_file()
@@ -248,6 +253,11 @@ def assess(root: Path, census: dict[str, Any]) -> dict[str, bool]:
             for row in research_audit["runs"]
         )
         and research_audit["runs"][0]["cohort_irt_fitted"],
+        "fitting_benchmark": len(measured.get("fit_repetitions", [])) >= 15
+        and all(
+            row["fitted_skills"] >= 2 and row["learners"] == 8
+            for row in measured.get("fit_repetitions", [])
+        ),
         "leakage": research_audit["planted_leaks_detected"]
         and all(
             row["fit_scopes_valid"] and row["split_audits_valid"] for row in research_audit["runs"]

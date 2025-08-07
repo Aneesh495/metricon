@@ -15,7 +15,7 @@ Canonical schema; streaming adapters; strict validation and quarantine; immutabl
 ## Verified commands
 
 - `ruff check src tests`: passed.
-- `pytest -q`: 84 passed. One upstream Starlette/AnyIO deprecation warning remains visible.
+- `pytest -q`: 88 passed in the latest full pass; recent artifact changes also passed focused evaluation/task checks. One upstream Starlette/AnyIO deprecation warning remains visible.
 - `npm run check`: passed strict TypeScript checks.
 - `npm run test:web`: 3 passed.
 - `npm run build`: passed.
@@ -64,3 +64,9 @@ A mixed duration scope exposed a missing bundle aggregate, now corrected with an
 Acceptance exposed Vitest discovering the Playwright suite. Unit discovery now targets source unit files; all eight browser workflows remain in the separate Playwright runner. The failed command log is retained. Item prior and hierarchical keys now use canonical source/item tuples; saved legacy encodings retain compatibility. Raw predictions retain qualified learner clusters so paired comparisons cannot merge delimiter-containing identifiers. Focused fitting, serialization and comparison checks pass.
 
 The duration review also covered session tables. Their bundle ranking now separates event, bundle and missing duration scopes. The same independent mixed-scope fixture checks both overview and session totals. Acceptance was stopped during review, with partial raw evidence retained; the final campaign will use the corrected source.
+
+## Artifact reproducibility and fitting measurements
+
+Installed-wheel training and client serving passed against the locked environment. Every new experiment now retains the exact lock file in its hashed payload and rejects a missing lock. Earlier runs that retained only its checksum remain historical artifacts; they cannot satisfy final research acceptance.
+
+The earlier scale worker timed BKT on four histories whose skills lacked repeated learner support. Those sparse-fallback timings remain recorded. A separate five-repetition fitting campaign uses eight complete fixed histories, with two genuinely optimized skills, and preserves parameters/diagnostics. The first focused check fitted both skills on 80 accepted observations. Final source verification follows the full import repetitions.

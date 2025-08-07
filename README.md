@@ -1,43 +1,69 @@
 # Metricon
 
-Metricon connects immutable practice records, uncertainty, calibrated prediction, and inspectable study decisions. It runs locally with Python, SQLite, Parquet, DuckDB, Polars, and a React scientific workbench.
+Metricon is a local learning analytics laboratory. It connects immutable practice records, leakage-safe history features, calibrated prediction and inspectable study decisions. SQLite owns transactional metadata, Parquet owns canonical observations, and independent DuckDB/Polars connections serve a React scientific workbench.
 
-An imported answer is an observation. The last correct answer is not confirmed mastery. Legacy browser exports have no timestamps, so their charts show question-local event order. Empty accounts stay empty; demonstration datasets require an explicit action and have separate storage.
+An answer is an observation. A final correct answer does not certify mastery. Empty workspaces stay empty. Synthetic demonstrations require an explicit action and retain a separate workspace label. Original browser exports preserve question-local order because they contain no real timestamps.
 
-## Run locally
+![Metricon showing aggregate EdNet evidence, eligible counts and uncertainty](docs/screenshots/workbench.png)
 
-Requires Python 3.13, Node 24, and uv. Dependencies are locked in `uv.lock` and `package-lock.json`.
+This is the running local application over the recorded EdNet subset. The screenshot shows aggregate evidence; it is not a substitute for the frozen research artifacts.
 
-```bash
-uv sync --locked
-npm ci
-npm run build
-uv run metricon serve --port 8000
-```
+## Start in five minutes
 
-Open http://127.0.0.1:8000. Create a workspace, preview a file, inspect its quality warnings, and submit the import. The explicit demo action creates a synthetic workspace. The service binds to loopback by default.
+Requires Python 3.13, Node 24 and uv on macOS or Linux. Python and Node dependencies are locked. The built wheel includes the production workbench and dependency lock.
 
 ```bash
-uv run metricon demo
-uv run metricon --help
-uv run pytest -q
-uv run ruff check src tests
-npm run check
-npm run test:web
+make bootstrap
+.venv/bin/metricon serve --port 8000
 ```
 
-## Implemented behavior
+Open [the local workbench](http://127.0.0.1:8000). Create a workspace, upload an existing export, preview its schema, inspect rejections and commit the import. The service binds to loopback. The explicit synthetic sandbox action provides a self-contained example.
 
-- Streaming JSON, legacy question-keyed JSON, CSV, NDJSON, and Parquet adapters validate strict booleans, stable identities, timestamps, and duration scope. Duplicate attempts are idempotent; changed content under the same identity is quarantined as a conflict.
-- Immutable Parquet partitions and transactional SQLite manifest pointers preserve the previous dataset until a complete import is committed. Independent DuckDB connections scan committed files.
-- Aggregates report eligible counts, Wilson intervals, first-attempt and all-attempt accuracy, actual streaks, retry censoring, and known-duration distributions. Cohort panels require observed peers.
-- Training includes constant, item-prior, recent-history, logistic, hierarchical Beta-Binomial, fitted BKT, and eligible regularized cohort IRT models. Predictions precede answers. Temporal splits keep coupled sessions together.
-- Experiments preserve predictions, parameters, validation-only calibration, cluster bootstrap uncertainty, diagnostics, and source snapshots. The workbench exposes model mechanics, lineage, held-out errors, recommendations, and conditional simulations.
+```bash
+make demo
+make dev
+```
 
-## Reproduction and current evidence
+The development workbench runs at [port 5173](http://127.0.0.1:5173) with an API proxy to 8000. Stop an existing production server before starting `make dev`. The runner propagates startup failures and stops its own child process groups.
 
-The [build status](docs/BUILD_STATUS.md) records implemented behavior and outstanding verification. The [architecture](docs/ARCHITECTURE.md) describes ownership and publication boundaries. Research outputs and imported public records live in ignored local storage. EdNet KT1 is used under its research license; raw learner records are not distributed here.
+## Follow the evidence
 
-The local EdNet subset contains 200,653 valid interactions from 1,268 learners. Its first experiment completed; final research review, scale measurements, and full acceptance remain in progress. A passing build is not research validation.
+The workbench has import/quality inspection, dataset and learner filtering, question/skill tables, uncertainty and sequence views, real cohort eligibility, experiment comparison, calibration, model replay, lineage, planning, simulation and persistent task inspection. Model-derived views identify their dataset and run. Tables are paginated and virtualized with a complete accessible page alternative; charts retain eligible denominators and uncertainty.
 
-MIT applies to Metricon source. Public datasets retain their own terms.
+The [working CLI sequence](docs/API_CLI.md) creates a dataset, fits an experiment, recomputes frozen metrics, compares models, plans a session and exports accepted observations. CLI and API call the same packaged behavior.
+
+| Stage | Implemented contract |
+| --- | --- |
+| [Ingest](src/metricon/ingest/pipeline.py) | Bounded JSON, original question-keyed JSON, CSV, NDJSON, Parquet and EdNet adapters. Strict booleans, source identities, checksummed originals and explicit quarantine. Exact duplicates are idempotent; changed content under an existing ID is a conflict. |
+| [Store](src/metricon/storage/catalog.py) | Immutable versions, exact disk identity indexes and transactional manifest pointers. Interrupted publication exposes a previous or complete dataset. Workers return hashed outputs to one metadata coordinator. |
+| [Analyze](src/metricon/analytics/engine.py) | First/all-attempt accuracy, Wilson intervals, real streaks, censored retries, scoped duration statistics, sessions and supported cohort comparisons. Unknown groups remain unknown. |
+| [Model](src/metricon/models) | Constant, item-prior, recent-history and regularized logistic baselines; fitted BKT; hierarchical Beta-Binomial performance; eligible regularized 1PL/2PL cohort IRT. |
+| [Evaluate](src/metricon/evaluation/experiment.py) | Whole-unit forward, learner-held-out and rolling splits; training-only preprocessing; validation selection/calibration; frozen probabilities; learner-cluster intervals; same-row paired comparisons and retained ablations. |
+| [Plan](src/metricon/recommendation/planner.py) | Observed history, uncertainty, priorities, prerequisites, repetition penalties and optional saved BKT state. Time allocation requires observed eligible duration support. |
+| [Simulate](src/metricon/simulation/campaign.py) | Matched seeds and equal budgets across five policies, four latent regimes and a deliberately misspecified process, with complete trajectories. |
+
+## Reproduce the research and measurements
+
+```bash
+make test
+make test-integration
+make test-e2e
+make dataset-public
+make experiment
+make benchmark
+make acceptance
+make verify
+```
+
+The full campaign takes longer than fast checks. It runs adversarial imports, independent analytical references, actual interruption/restart cases, every scale repetition, fixed synthetic comparisons, public research, simulations and browser workflows. `verify` checks existing evidence without regenerating it. Missing or changed evidence fails.
+
+The deterministic EdNet KT1 subset has 200,653 valid interactions from 1,268 learners. Its [dataset card](docs/PUBLIC_DATA.md) records acquisition, exclusion and shifted-time semantics. The [research report](docs/reports/RESEARCH.md) retains all baselines, calibration and ablations, including weak IRT results. The [performance report](docs/reports/PERFORMANCE.md) records raw repetitions, RSS, query distributions and unmet throughput objectives. Predictive quality and performance objectives remain separate from system correctness.
+
+## Read the contracts
+
+- [Architecture and data ownership](docs/ARCHITECTURE.md), [schema and adapters](docs/SCHEMA.md), [metric glossary](docs/METRICS.md).
+- [Feature leakage rules](docs/FEATURES.md), [model derivations](docs/MODELS.md), [model cards](docs/MODEL_CARDS.md).
+- [Experiment reproduction](docs/REPRODUCIBILITY.md), [simulation assumptions](docs/SIMULATION.md), [source and scientific review](docs/reports/REVIEW.md).
+- [Task/recovery runbook](docs/TASKS.md), [API/CLI reference](docs/API_CLI.md), [ADRs](docs/adrs), [build status](docs/BUILD_STATUS.md).
+
+Artifacts, databases, downloaded archives and raw public learner records live in ignored local storage. No hosted service or model API is required. MIT applies to Metricon source; public datasets retain their own terms. EdNet is attributed to the original [Riiid repository](https://github.com/riiid/ednet) and used under its research license.

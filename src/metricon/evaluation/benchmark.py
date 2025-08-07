@@ -56,6 +56,125 @@ def peak_rss() -> int:
     return int(value if sys.platform == "darwin" else value * 1024)
 
 
+def fit_worker(request: dict[str, Any]) -> dict[str, Any]:
+    catalog = Catalog(Path(request["store"]), read_only=True)
+    dataset = request["dataset_id"]
+    identifiers = [f"learner-{index}" for index in [42, 43, 52, 53, 62, 63, 72, 73]]
+    with analytical_connection(catalog, dataset) as connection:
+        count = connection.execute(
+            "SELECT count(*) FROM events WHERE learner_id IN (SELECT unnest(?))", [identifiers]
+        ).fetchone()[0]
+        if count > 10000:
+            raise ValueError("Fitting benchmark exceeds its complete-history input bound")
+        rows = (
+            connection.execute(
+                "SELECT * FROM events WHERE learner_id IN (SELECT unnest(?)) ORDER BY learner_id,source_sequence",
+                [identifiers],
+            )
+            .fetch_arrow_table()
+            .to_pylist()
+        )
+    timings = {}
+    parameters = {}
+    diagnostics = {}
+    for name, model in [("global", GlobalBaseline()), ("bkt", BKT(starts=2, max_iterations=80))]:
+        started = time.perf_counter()
+        model.fit(rows)
+        timings[name] = time.perf_counter() - started
+        parameters[name] = model.parameters()
+        diagnostics[name] = getattr(model, "diagnostics", {})
+    fitted = sum(item.get("fitted", False) for item in diagnostics["bkt"].values())
+    if fitted < 2 or len({row["learner_id"] for row in rows}) != 8:
+        raise ValueError(
+            "Benchmark must optimize two supported skills from eight complete histories"
+        )
+    repository = Path(__file__).parents[3]
+    snapshot = source_code_hash(repository / "src/metricon")
+    directory = Path(request["snapshot_root"]) / snapshot["hash"]
+    directory.mkdir(parents=True, exist_ok=True)
+    for name, checksum in snapshot["files"].items():
+        target = directory / name
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(repository / "src/metricon" / name, target)
+        if file_hash(target) != checksum:
+            raise RuntimeError("Fitting source changed during snapshot")
+    locked = environment(repository / "uv.lock")
+    atomic_json(directory / "manifest.json", snapshot)
+    atomic_json(directory / "environment.json", locked)
+    shutil.copyfile(repository / "uv.lock", directory / "uv.lock")
+    return {
+        "contract": "complete-eight-history-fit/1",
+        "input_rows": request["rows"],
+        "repetition": request["repetition"],
+        "dataset_id": dataset,
+        "fitting_rows": len(rows),
+        "learners": len(identifiers),
+        "learner_ids": identifiers,
+        "fitted_skills": fitted,
+        "fit_seconds": timings,
+        "parameters": parameters,
+        "diagnostics": diagnostics,
+        "peak_process_rss_bytes": peak_rss(),
+        "source_code": snapshot,
+        "environment": locked,
+        "native_thread_pools": threadpool_info(),
+        "scope": "Eight fixed complete learner histories, at most 10000 accepted rows. Timings exclude query, process startup and source snapshot IO.",
+    }
+
+
+def fitting_benchmark(root: Path, sizes: tuple[int, ...], repetitions: int) -> list[dict[str, Any]]:
+    destination = root / "fitting"
+    destination.mkdir(exist_ok=True)
+    records = []
+    source_hash = source_code_hash(Path(__file__).parents[1])["hash"]
+    for size in sizes:
+        store = root / "stores" / f"{size}-{repetitions - 1}"
+        catalog = Catalog(store, read_only=True)
+        dataset = catalog.workspaces()[-1]["dataset_id"]
+        for index in range(repetitions):
+            path = destination / f"fit-{size}-{index}.json"
+            if path.exists() and json.loads(path.read_text())["source_code"]["hash"] != source_hash:
+                archive = destination / "previous"
+                archive.mkdir(exist_ok=True)
+                path.rename(archive / f"{path.stem}-{time.time_ns()}.json")
+            if not path.exists():
+                request = destination / "request.json"
+                atomic_json(
+                    request,
+                    {
+                        "store": str(store.resolve()),
+                        "dataset_id": dataset,
+                        "rows": size,
+                        "repetition": index,
+                        "snapshot_root": str((root / "source-snapshots").resolve()),
+                    },
+                )
+                with (destination / f"fit-{size}-{index}-{time.time_ns()}.log").open("w") as log:
+                    subprocess.run(
+                        [
+                            sys.executable,
+                            "-m",
+                            "metricon.evaluation.benchmark",
+                            "--fit-worker",
+                            str(request),
+                            "--output",
+                            str(path),
+                        ],
+                        env={
+                            **os.environ,
+                            "OMP_NUM_THREADS": "1",
+                            "OPENBLAS_NUM_THREADS": "1",
+                            "MKL_NUM_THREADS": "1",
+                            "POLARS_MAX_THREADS": "2",
+                        },
+                        stdout=log,
+                        stderr=log,
+                        check=True,
+                    )
+            records.append(json.loads(path.read_text()))
+    return records
+
+
 def measure_worker(request: dict[str, Any]) -> dict[str, Any]:
     store, source = Path(request["store"]), Path(request["source"])
     catalog = Catalog(store)
@@ -191,6 +310,7 @@ def benchmark(
     root.mkdir(parents=True, exist_ok=True)
     records = []
     required_sources = measurement_sources(Path(__file__).parents[3])
+    required_lock = environment(Path(__file__).parents[3] / "uv.lock")["lock_sha256"]
     for size in sizes:
         source = root / "corpora" / f"events-{size}.ndjson"
         corpus = write_workload(source, size)
@@ -200,6 +320,7 @@ def benchmark(
             previous = json.loads(output.read_text()) if output.exists() else None
             if previous is not None and (
                 "native_thread_pools" not in previous
+                or previous["environment"]["lock_sha256"] != required_lock
                 or any(
                     previous["source_code"]["files"].get(name) != checksum
                     for name, checksum in required_sources.items()
@@ -238,7 +359,7 @@ def benchmark(
                         "snapshot_root": str((root / "source-snapshots").resolve()),
                     },
                 )
-                environment = {
+                worker_environment = {
                     **os.environ,
                     "OMP_NUM_THREADS": "1",
                     "OPENBLAS_NUM_THREADS": "1",
@@ -257,7 +378,7 @@ def benchmark(
                             "--output",
                             str(output),
                         ],
-                        env=environment,
+                        env=worker_environment,
                         stdout=log,
                         stderr=log,
                         check=True,
@@ -282,6 +403,7 @@ def benchmark(
         "summaries": {},
         "measurements_are_promises": False,
     }
+    summary["fit_repetitions"] = fitting_benchmark(root, sizes, repetitions)
     hardware_path = root / "hardware.json"
     if hardware_path.exists():
         summary["hardware"]["observed_profile"] = json.loads(hardware_path.read_text())
@@ -337,10 +459,13 @@ def benchmark(
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--worker", type=Path)
+    parser.add_argument("--fit-worker", type=Path)
     parser.add_argument("--output", type=Path)
     parser.add_argument("--root", type=Path, default=Path(".metricon/benchmark"))
     arguments = parser.parse_args()
-    if arguments.worker:
+    if arguments.fit_worker:
+        atomic_json(arguments.output, fit_worker(json.loads(arguments.fit_worker.read_text())))
+    elif arguments.worker:
         atomic_json(arguments.output, measure_worker(json.loads(arguments.worker.read_text())))
     else:
         benchmark(arguments.root)

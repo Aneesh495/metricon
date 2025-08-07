@@ -28,3 +28,5 @@ flowchart LR
 ```
 
 Learner-held-out splits keep entire learners separate. Rolling folds advance within known order domains. Parameters stay frozen during evaluation; an explicit option permits earlier observed evaluation answers to update later online state. Cold and warm learner/item slices are reported separately.
+
+The temporal gap feature assumes the current timestamp is available when the question is presented. The official KT1 specification provides that clock. For sources that record only response completion, retain the original log and omit that unavailable timestamp from the predictive import, or inspect the evaluated no-time variant. A timestamp format alone cannot prove pre-answer availability.

@@ -64,6 +64,12 @@ def test_reusable_pipeline_hashes_every_artifact(catalog):
     report = read_json(catalog.root / "artifacts" / artifact / "report.json")
     assert report["folds"][0]["models"]["global"]["test"]["n"] > 0
     assert catalog.ancestors(artifact)
+    from metricon.storage.hashing import file_hash
+
+    assert (
+        file_hash(catalog.root / "artifacts" / artifact / "dependency.lock")
+        == report["environment"]["lock_sha256"]
+    )
 
 
 def test_equivalent_split_assignments_in_distinct_datasets_have_scoped_lineage(catalog):

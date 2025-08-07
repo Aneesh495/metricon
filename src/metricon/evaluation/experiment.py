@@ -128,6 +128,17 @@ def environment(lock_path: Path | None = None) -> dict[str, Any]:
     }
 
 
+def dependency_lock() -> Path:
+    checkout = Path(__file__).parents[3] / "uv.lock"
+    packaged = Path(__file__).parents[1] / "dependency.lock"
+    for path in [checkout, packaged]:
+        if path.is_file():
+            return path
+    raise ValueError(
+        "Reproducible experiments require the dependency lock from the checkout or wheel"
+    )
+
+
 def model_factories(config: ExperimentConfig) -> dict[str, Callable[[], Any]]:
     factories: dict[str, Callable[[], Any]] = {}
     choices = {
@@ -240,7 +251,7 @@ def run_experiment(
     report: dict[str, Any] = {
         "dataset_id": dataset_id,
         "configuration": config.as_dict(),
-        "environment": environment(Path(__file__).parents[3] / "uv.lock"),
+        "environment": environment(dependency_lock()),
         "feature_version": FEATURE_VERSION,
         "source_code": source_code_hash(Path(__file__).parents[1]),
         "folds": [],
@@ -259,6 +270,9 @@ def run_experiment(
                 )
         atomic_json(writer.path / "source-manifest.json", report["source_code"])
         atomic_json(writer.path / "environment.json", report["environment"])
+        shutil.copyfile(dependency_lock(), writer.path / "dependency.lock")
+        if file_hash(writer.path / "dependency.lock") != report["environment"]["lock_sha256"]:
+            raise RuntimeError("Dependency lock changed while snapshotting the experiment")
         atomic_json(
             writer.path / "feature-contract.json",
             {
