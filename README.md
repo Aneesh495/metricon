@@ -30,7 +30,7 @@ The development workbench runs at [port 5173](http://127.0.0.1:5173) with an API
 
 The workbench has import/quality inspection, dataset and learner filtering, question/skill tables, uncertainty and sequence views, real cohort eligibility, experiment comparison, calibration, model replay, lineage, planning, simulation and persistent task inspection. Model-derived views identify their dataset and run. Tables are paginated and virtualized with a complete accessible page alternative; charts retain eligible denominators and uncertainty.
 
-The [working CLI sequence](docs/API_CLI.md) creates a dataset, fits an experiment, recomputes frozen metrics, compares models, plans a session and exports accepted observations. CLI and API call the same packaged behavior.
+The [workbench walkthrough](docs/WORKBENCH.md) shows actual fitting, model replay and responsive controls. The [working CLI sequence](docs/API_CLI.md) creates a dataset, fits an experiment, recomputes frozen metrics, compares models, plans a session and exports accepted observations. CLI and API call the same packaged behavior.
 
 | Stage | Implemented contract |
 | --- | --- |

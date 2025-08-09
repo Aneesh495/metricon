@@ -1226,6 +1226,10 @@ pre {
   }
   .page-intro {
     align-items: flex-start;
+    flex-direction: column;
+  }
+  .page-intro > .field {
+    width: 100%;
   }
   h1 {
     font-size: 26px;
