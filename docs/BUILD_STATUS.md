@@ -1,74 +1,68 @@
 # Build status
 
-Implementation and full verification are in progress.
+The implemented laboratory passed the complete correctness campaign and independent verification on October 1, 2026. The synthetic predictive targets passed. The canonical import throughput objective remains unmet and is reported separately.
 
-## Baseline and repository state
+## Implemented contracts
 
-Audited baseline: `788432c260b34fe7f74609156ccf1af40c6801de`. Current remote baseline: `d8d7bbd03bf5ac2665cee45736c3139b1a6e7e2c`. Their source trees match. A fast-forward between rewritten histories was refused; the isolated local branch starts at the current remote tip. The original checkout is untouched. No remote push or deployment has occurred.
+| Modules | Implemented behavior and source |
+| --- | --- |
+| Schema, ingestion and quality | [Strict canonical events](../src/metricon/schema/events.py), [bounded adapters](../src/metricon/ingest/adapters.py), original browser compatibility, quality/rejection/conflict records, [integrity and drift audits](../src/metricon/quality/audit.py). |
+| Storage and tasks | [Immutable partition/catalog publication](../src/metricon/storage/catalog.py), checksummed source references, exact identity indexes, coordinator-owned publication, bounded processes, cancellation, wall budgets and restart recovery. See the [runbook](TASKS.md). |
+| Analytics and features | [DuckDB/Polars aggregates](../src/metricon/analytics/engine.py), real denominators, uncertainty, scoped durations, pagination and versioned caches; [as-of history](../src/metricon/features/history.py), whole-unit splits and complete fitting scopes. |
+| Models and evaluation | Constant/item/recent/logistic baselines, fitted BKT, hierarchical performance and eligible 1PL/2PL cohort IRT; [frozen predictions, calibration, cluster uncertainty and ablations](../src/metricon/evaluation/experiment.py). |
+| Planning and simulation | [Observed-support action ranking](../src/metricon/recommendation/planner.py), priorities/prerequisites and honest time eligibility; seeded matched-budget simulation, complete trajectories and a misspecified regime. |
+| API, CLI and workbench | [Loopback API](../src/metricon/api/app.py), [packaged CLI](../src/metricon/cli/main.py), runtime-validated React client, import inspection, run comparison, model replay, lineage, task controls, exports and accessible responsive views. |
 
-The original TypeScript sample widened attempt kind to string, peer values were invented, cumulative successes were labeled a streak, and empty browser storage was populated with sample records. These paths have been replaced with explicit imports, observed aggregates, and synthetic workspace separation.
+The original sample typing failure, invented peer benchmarks, cumulative-success streak and automatic demonstration import were removed. Empty workspaces stay empty. Last correctness does not certify mastery. The [schema](SCHEMA.md), [metric glossary](METRICS.md), [model cards](MODEL_CARDS.md) and [ADRs](adrs) define the replacements.
 
-## Implemented modules
+## Command evidence
 
-Canonical schema; streaming adapters; strict validation and quarantine; immutable partition publication; checksums and recovery; SQL/Polars analytics; as-of features and temporal manifests; baseline, logistic, hierarchical, BKT and cohort IRT fitting; calibration, cluster uncertainty, ablations, prediction inspection; EdNet acquisition and complete-sequence subset selection; study planning; seeded simulation; local API; persistent tasks; typed analytical workbench.
+Locked Python and Node installs, lint, strict TypeScript, production client/wheel builds and browser verification passed. The final fast campaign reports 88 Python tests, 3 client unit tests and 8 browser workflows. One upstream Starlette/AnyIO deprecation warning remains visible.
 
-## Verified commands
+| Command | Recorded outcome |
+| --- | --- |
+| `uv sync --locked` | Passed; `.metricon/verification/commands/python-install.json` and its raw log. |
+| `npm ci` | Passed; `.metricon/verification/commands/node-install.json` and its raw log. |
+| `ruff check src tests scripts` | Passed; `.metricon/verification/commands/lint.json` and its raw log. |
+| `pytest -q` | Passed; `.metricon/verification/commands/python-tests.json` and its raw log. |
+| `npm run check` | Passed; `.metricon/verification/commands/typescript.json` and its raw log. |
+| `npm run test:web` | Passed; `.metricon/verification/commands/web-tests.json` and its raw log. |
+| `npm run build` | Passed; `.metricon/verification/commands/production-build.json` and its raw log. |
+| `uv build --wheel` | Passed; `.metricon/verification/commands/api-build.json` and its raw log. |
+| `npm run test:e2e` | Passed; `.metricon/verification/commands/browser.json` and its raw log. |
+| `make bootstrap` | Locked environment, client and wheel built; the final installed-wheel check also fitted all baseline/BKT/IRT families, retained the exact lock and served HTTP 200. |
+| `make dev`, `make demo` | Local API/client startup and explicit demo creation exercised. Startup failure propagates and owned process groups are cleaned up. |
+| `make test-integration` | Independent import, analytical and interruption campaigns completed; final acceptance reran or checked their source-matched evidence. |
+| CLI walkthrough | 23 actual commands exercised import/retry/rejection, analysis, fitting, forward/learner-held-out/rolling evaluation, paired comparison, planning, simulation and all four export formats. Expected invalid validation returned nonzero. |
+| `make acceptance` | All correctness gates passed; predictive targets true, performance targets false. |
+| `make verify` | Existing files, source, locks, datasets, scopes, frozen predictions, corpus checksums and gates verified without regeneration. |
 
-- `ruff check src tests`: passed.
-- `pytest -q`: 88 passed in the latest full pass; recent artifact changes also passed focused evaluation/task checks. One upstream Starlette/AnyIO deprecation warning remains visible.
-- `npm run check`: passed strict TypeScript checks.
-- `npm run test:web`: 3 passed.
-- `npm run build`: passed.
-- `npm audit`: zero reported vulnerabilities after build-tool updates.
+A changed raw evidence log was deliberately rejected by verification, then restored byte-for-byte. Historical failed runner, memory and source-change campaigns remain retained locally. The [review](reports/REVIEW.md) records the discovered causes and regression evidence.
 
-EdNet KT1 access was verified against the official Riiid repository and research terms. The deterministic local subset contains 200,653 accepted interactions from 1,268 learners; no import rejection, duplicate, or conflict. A first experiment artifact was published. Its logistic convergence warnings are retained for review; no model-quality claim has been made.
+## Required workloads
 
-Process tasks now enforce read-only worker metadata, coordinator publication, cooperative cancellation, wall-time termination, and parent-death cleanup. Browser inspection exposed a missing DuckDB timezone dependency; the locked dependency and timestamped API regression now cover it.
+| Workload | Final evidence |
+| --- | --- |
+| Import correctness | 10,000 generated cases; normalized content/counts match an independent reference, retry is idempotent. |
+| Analytical correctness | 1,000 generated datasets against independent Python histories and Polars, including empty/all-correct/all-incorrect and mixed duration scopes. |
+| Crash safety | 100 real interruption/restart cases around import/artifact publication; no half-visible dataset. |
+| Scale | Five repetitions each at 100,000, 1,000,000 and 10,000,000 records; exact independent contents/counts and import peak RSS below 2 GiB. |
+| Model fitting | Independent scalar BKT updates, finite-difference fitting checks, saved parameter round trips, eligible public-cohort IRT and 15 supported-history fitting repetitions. |
+| Leakage and evaluation | Planted future features/dependencies, fitting overlap and overlapping temporal splits rejected; complete preprocessing scopes and frozen metrics independently recomputed. |
+| Public research | 200,653 EdNet KT1 interactions from 1,268 learners, complete eligible histories, verified archive/content/subset provenance. |
+| Simulation | 1,200 policy outcomes and 18,000 trajectory events: four regimes, five policies, two budget modes and 30 seeds per cell. |
+| Product | Import/rejections, actual fitting, run comparison/calibration, saved mechanics, planning/simulation, running cancellation, exports, lineage, keyboard tables and mobile rendering. |
 
-## Incomplete verification
+## Findings and measured limits
 
-Final source-frozen benchmark/research reproduction, scientific figure review, measured reports, command walkthrough, final acceptance and independent evidence verification.
+The [research report](reports/RESEARCH.md) retains every baseline, calibration and ablation. On 42,960 common held-out EdNet targets, validation-selected logistic C=1 scored 0.549014 raw log loss, BKT 0.597889 and the constant 0.627377. Both uncalibrated cohort IRT variants fitted and scored worse than the constant; validation calibration improved their probability quality. Five fixed identifiable synthetic datasets showed BKT relative improvements of 33.48 to 36.57 percent. Simulation intervals include zero and do not establish a policy benefit.
 
-## Next action
+The [performance report](reports/PERFORMANCE.md) records every repetition and source snapshot. At ten million input records, median canonical import throughput was 22,215 records/second, maximum import RSS 1.241 GiB and worst measured common query p95 281.722 ms. The 50,000 records/second throughput objective failed; the 500 ms query objective passed on this workstation profile. Cold means connection-cold, with no OS cache flush.
 
-Complete CLI/make workflows, final public-data and synthetic research, browser tests, and acceptance verification. Resume from this file and current source. Raw records, generated artifacts, and the private execution ledger are ignored local files.
+Actual [figures](figures) link to raw figure data and immutable run IDs. [Workbench screenshots](WORKBENCH.md) show the running API-backed application, including readable stacked mobile learner controls. The scientific claims depend on recorded computations, not the screenshots.
 
-Independent campaigns completed: 10000 generated ingestion cases with field comparisons; 1000 analytical datasets against Python histories and Polars; 100 actual publication interruptions with restart/retry; simulation across four regimes and both budget modes with 30 seeds. Raw evidence is under ignored verification storage. Benchmark repetitions are running.
+## Evidence and next action
 
-## Current remediation checkpoint
+Accepted source/test/lock hash: `7452cb6a232a9ca9be2ac9480e1041410ff2aaf2246fe20b9da019068ded8b17`. The full `.metricon/verification/ACCEPTANCE.json` indexes 2,145 evidence files and the exact run artifacts. Raw predictions, dependency locks, source snapshots, split/feature scopes, bootstrap seeds, benchmark profiles and simulation traces remain in ignored local storage.
 
-The actual browser workflows exposed coordinator ownership and dataset-scoped split lineage failures. Both now have process and cross-dataset regression tests. BKT fitting uses the same frozen coupled-unit prediction policy as evaluation, with independent scalar score and finite-difference gradient checks. Materialized features close overlapping sessions and timestamp ties rather than assuming contiguous sessions.
-
-The first measured ten-million-event import used 391,495,680 bytes of peak RSS but took 1,763 seconds. Its raw results remain retained as a baseline. Binary full-digest identity shards replace the random text-key staging tree; independent generated imports and all 100 interruption cases passed again. The full five-repetition scale campaign is running against the revised implementation. Throughput targets remain measurements, not asserted results.
-
-Scientific plot generation and frozen cross-model comparison ran on the preliminary research artifact. Browser verification remains incomplete while the remaining policy, cancellation, export and responsive flows are exercised. No completion claim has been made.
-
-## Scientific and product verification checkpoint
-
-All eight end-to-end browser workflows passed, including import/rejections, actual fitting, run comparison/calibration, saved parameter replay, planning, misspecified simulation, running cancellation, export, lineage integrity, keyboard tables and mobile layout. The wrapper now records results at the same evidence path as screenshots. A long immutable dataset ID previously overflowed mobile notices; wrapping is fixed and verified.
-
-All five fixed synthetic workloads met their predictive target: BKT test log loss improved 33 to 37 percent relative to the constant baseline on their known process. The completed EdNet run selected logistic C=1 on validation. It scored approximately 0.549 test log loss; BKT approximately 0.598; the constant approximately 0.627. Both cohort IRT models fitted but scored worse than the constant. No test tuning or baseline omission was used. Final source-frozen reproduction still follows review.
-
-The revised ten-million-event import completed in 521 seconds at 1.29 GB peak import RSS. Its feature materialization completed after an unnecessary window was replaced by a spill-capable ordering query. Failed worker logs and preliminary source snapshots are retained. Remaining raw repetitions and native thread-pool inspection are still running.
-
-A skeptical parsing/recovery pass replaced unbounded canonical JSON object construction with bounded byte framing, removed legacy per-question parser dictionary growth, added integer storage bounds, and protected coordinator progress reads from partial lines. Independent fitting scopes and deliberately planted feature/split leakage were audited on actual saved runs.
-
-## Evidence and packaging review
-
-Locked bootstrap built the React client and a wheel containing that client and the dependency lock. An extracted installed wheel served the workbench. The eight browser workflows and independent import/recovery campaigns passed. The expanded analytical campaign passed 1,000 datasets including explicit all-correct/all-incorrect histories, skill denominators, mixed event/bundle durations and streaks.
-
-A mixed duration scope exposed a missing bundle aggregate, now corrected with an independent regression. Cached aggregates are versioned by query parameters and implementation hashes and reject altered payloads. Source/dataset manifests and exact authorized preprocessing partitions are checked during verification. Raw benchmark records missing native thread measurements are retained and remeasured. The development runner now propagates child startup failures and cleans up its own process groups.
-
-## Final runner and identity review
-
-Acceptance exposed Vitest discovering the Playwright suite. Unit discovery now targets source unit files; all eight browser workflows remain in the separate Playwright runner. The failed command log is retained. Item prior and hierarchical keys now use canonical source/item tuples; saved legacy encodings retain compatibility. Raw predictions retain qualified learner clusters so paired comparisons cannot merge delimiter-containing identifiers. Focused fitting, serialization and comparison checks pass.
-
-The duration review also covered session tables. Their bundle ranking now separates event, bundle and missing duration scopes. The same independent mixed-scope fixture checks both overview and session totals. Acceptance was stopped during review, with partial raw evidence retained; the final campaign will use the corrected source.
-
-## Artifact reproducibility and fitting measurements
-
-Installed-wheel training and client serving passed against the locked environment. Every new experiment now retains the exact lock file in its hashed payload and rejects a missing lock. Earlier runs that retained only its checksum remain historical artifacts; they cannot satisfy final research acceptance.
-
-The earlier scale worker timed BKT on four histories whose skills lacked repeated learner support. Those sparse-fallback timings remain recorded. A separate five-repetition fitting campaign uses eight complete fixed histories, with two genuinely optimized skills, and preserves parameters/diagnostics. The first focused check fitted both skills on 80 accepted observations. Final source verification follows the full import repetitions.
-
-Mobile viewport review found compressed learner filters. The controls now stack at narrow widths. Actual DOM measurement showed both fields at 358 pixels in a 390-pixel viewport, with no browser errors. Strict TypeScript, client tests and production build passed. The readable viewport image and application walkthrough accompany the change; final source acceptance is rerun afterward.
+Incomplete required correctness gates: none. The remaining measured optimization objective is import throughput. Reproduce `make acceptance` and `make verify` before comparing a changed implementation. Changes to data or transformation contracts require new dependent artifacts and fresh verification; existing results remain immutable.

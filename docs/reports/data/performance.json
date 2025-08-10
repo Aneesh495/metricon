@@ -1,0 +1,1549 @@
+{
+  "fits": [
+    {
+      "bkt_seconds": 0.0300471669761464,
+      "fitted_skills": 2,
+      "fitting_rows": 80,
+      "global_seconds": 8.666014764457941e-06,
+      "input_rows": 100000,
+      "learners": 8,
+      "peak_process_rss_bytes": 211091456,
+      "repetition": 0
+    },
+    {
+      "bkt_seconds": 0.02388649998465553,
+      "fitted_skills": 2,
+      "fitting_rows": 80,
+      "global_seconds": 8.125032763928175e-06,
+      "input_rows": 100000,
+      "learners": 8,
+      "peak_process_rss_bytes": 226803712,
+      "repetition": 1
+    },
+    {
+      "bkt_seconds": 0.023060042003635317,
+      "fitted_skills": 2,
+      "fitting_rows": 80,
+      "global_seconds": 7.207971066236496e-06,
+      "input_rows": 100000,
+      "learners": 8,
+      "peak_process_rss_bytes": 228065280,
+      "repetition": 2
+    },
+    {
+      "bkt_seconds": 0.03900345804868266,
+      "fitted_skills": 2,
+      "fitting_rows": 80,
+      "global_seconds": 3.879197174683213e-05,
+      "input_rows": 100000,
+      "learners": 8,
+      "peak_process_rss_bytes": 230637568,
+      "repetition": 3
+    },
+    {
+      "bkt_seconds": 0.023701541998889297,
+      "fitted_skills": 2,
+      "fitting_rows": 80,
+      "global_seconds": 7.750000804662704e-06,
+      "input_rows": 100000,
+      "learners": 8,
+      "peak_process_rss_bytes": 227639296,
+      "repetition": 4
+    },
+    {
+      "bkt_seconds": 0.24939970904961228,
+      "fitted_skills": 2,
+      "fitting_rows": 800,
+      "global_seconds": 5.562498699873686e-05,
+      "input_rows": 1000000,
+      "learners": 8,
+      "peak_process_rss_bytes": 261636096,
+      "repetition": 0
+    },
+    {
+      "bkt_seconds": 0.25446079100947827,
+      "fitted_skills": 2,
+      "fitting_rows": 800,
+      "global_seconds": 7.37080117687583e-05,
+      "input_rows": 1000000,
+      "learners": 8,
+      "peak_process_rss_bytes": 265912320,
+      "repetition": 1
+    },
+    {
+      "bkt_seconds": 0.24870595801621675,
+      "fitted_skills": 2,
+      "fitting_rows": 800,
+      "global_seconds": 4.962499951943755e-05,
+      "input_rows": 1000000,
+      "learners": 8,
+      "peak_process_rss_bytes": 265568256,
+      "repetition": 2
+    },
+    {
+      "bkt_seconds": 0.2491157500189729,
+      "fitted_skills": 2,
+      "fitting_rows": 800,
+      "global_seconds": 5.0083035603165627e-05,
+      "input_rows": 1000000,
+      "learners": 8,
+      "peak_process_rss_bytes": 263208960,
+      "repetition": 3
+    },
+    {
+      "bkt_seconds": 0.24759375001303852,
+      "fitted_skills": 2,
+      "fitting_rows": 800,
+      "global_seconds": 5.329196574166417e-05,
+      "input_rows": 1000000,
+      "learners": 8,
+      "peak_process_rss_bytes": 264552448,
+      "repetition": 4
+    },
+    {
+      "bkt_seconds": 2.594511707953643,
+      "fitted_skills": 2,
+      "fitting_rows": 8000,
+      "global_seconds": 0.0005643330514431,
+      "input_rows": 10000000,
+      "learners": 8,
+      "peak_process_rss_bytes": 332791808,
+      "repetition": 0
+    },
+    {
+      "bkt_seconds": 2.584087499999441,
+      "fitted_skills": 2,
+      "fitting_rows": 8000,
+      "global_seconds": 0.0005981660215184093,
+      "input_rows": 10000000,
+      "learners": 8,
+      "peak_process_rss_bytes": 339591168,
+      "repetition": 1
+    },
+    {
+      "bkt_seconds": 2.634336584014818,
+      "fitted_skills": 2,
+      "fitting_rows": 8000,
+      "global_seconds": 0.0006085420027375221,
+      "input_rows": 10000000,
+      "learners": 8,
+      "peak_process_rss_bytes": 354975744,
+      "repetition": 2
+    },
+    {
+      "bkt_seconds": 2.634072833985556,
+      "fitted_skills": 2,
+      "fitting_rows": 8000,
+      "global_seconds": 0.0006082080071792006,
+      "input_rows": 10000000,
+      "learners": 8,
+      "peak_process_rss_bytes": 334708736,
+      "repetition": 3
+    },
+    {
+      "bkt_seconds": 2.6511748749762774,
+      "fitted_skills": 2,
+      "fitting_rows": 8000,
+      "global_seconds": 0.0004558750079013407,
+      "input_rows": 10000000,
+      "learners": 8,
+      "peak_process_rss_bytes": 346030080,
+      "repetition": 4
+    }
+  ],
+  "hardware": {
+    "logical_cpus": 8,
+    "machine": "arm64",
+    "observed_profile": {
+      "captured_at": "2026-10-01T07:16:38.244801+00:00",
+      "logical_cpus": 8,
+      "machine": "arm64",
+      "method": "Read-only sysctl queries on this campaign host",
+      "observed": {
+        "hw.logicalcpu": "8",
+        "hw.memsize": "17179869184",
+        "hw.physicalcpu": "8",
+        "machdep.cpu.brand_string": "Apple M2"
+      },
+      "platform": "macOS-26.7-arm64-arm-64bit-Mach-O"
+    },
+    "platform": "macOS-26.7-arm64-arm-64bit-Mach-O",
+    "processor": "arm",
+    "python": "3.13.11 (main, Dec  5 2025, 16:06:33) [Clang 17.0.0 (clang-1700.6.3.2)]"
+  },
+  "imports": [
+    {
+      "feature_seconds": 0.6236279160366394,
+      "import_seconds": 4.242862166953273,
+      "parquet_bytes": 7746904,
+      "peak_import_rss_bytes": 348160000,
+      "repetition": 0,
+      "rows": 100000,
+      "rows_per_second": 23568.995660259287,
+      "source_bytes": 24545314
+    },
+    {
+      "feature_seconds": 0.6528135830303654,
+      "import_seconds": 4.112505208991934,
+      "parquet_bytes": 7746904,
+      "peak_import_rss_bytes": 348323840,
+      "repetition": 1,
+      "rows": 100000,
+      "rows_per_second": 24316.078623159294,
+      "source_bytes": 24545314
+    },
+    {
+      "feature_seconds": 0.633923584013246,
+      "import_seconds": 3.7862978329649195,
+      "parquet_bytes": 7746904,
+      "peak_import_rss_bytes": 348422144,
+      "repetition": 2,
+      "rows": 100000,
+      "rows_per_second": 26411.02322415388,
+      "source_bytes": 24545314
+    },
+    {
+      "feature_seconds": 0.637601624999661,
+      "import_seconds": 3.7654234999790788,
+      "parquet_bytes": 7746904,
+      "peak_import_rss_bytes": 348389376,
+      "repetition": 3,
+      "rows": 100000,
+      "rows_per_second": 26557.437696066754,
+      "source_bytes": 24545314
+    },
+    {
+      "feature_seconds": 0.7650935840210877,
+      "import_seconds": 3.7609348749974743,
+      "parquet_bytes": 7746904,
+      "peak_import_rss_bytes": 348372992,
+      "repetition": 4,
+      "rows": 100000,
+      "rows_per_second": 26589.13363929684,
+      "source_bytes": 24545314
+    },
+    {
+      "feature_seconds": 6.534072167007253,
+      "import_seconds": 39.401312791975215,
+      "parquet_bytes": 77060356,
+      "peak_import_rss_bytes": 444841984,
+      "repetition": 0,
+      "rows": 1000000,
+      "rows_per_second": 25379.86501311875,
+      "source_bytes": 247453114
+    },
+    {
+      "feature_seconds": 6.701781082956586,
+      "import_seconds": 39.138531667005736,
+      "parquet_bytes": 77060356,
+      "peak_import_rss_bytes": 441532416,
+      "repetition": 1,
+      "rows": 1000000,
+      "rows_per_second": 25550.268684274946,
+      "source_bytes": 247453114
+    },
+    {
+      "feature_seconds": 6.625402833044063,
+      "import_seconds": 40.519196832960006,
+      "parquet_bytes": 77060356,
+      "peak_import_rss_bytes": 441090048,
+      "repetition": 2,
+      "rows": 1000000,
+      "rows_per_second": 24679.65996765657,
+      "source_bytes": 247453114
+    },
+    {
+      "feature_seconds": 6.981357541983016,
+      "import_seconds": 40.159807582967915,
+      "parquet_bytes": 77060356,
+      "peak_import_rss_bytes": 442089472,
+      "repetition": 3,
+      "rows": 1000000,
+      "rows_per_second": 24900.517711247892,
+      "source_bytes": 247453114
+    },
+    {
+      "feature_seconds": 6.497313125000801,
+      "import_seconds": 40.508500375028234,
+      "parquet_bytes": 77060356,
+      "peak_import_rss_bytes": 465584128,
+      "repetition": 4,
+      "rows": 1000000,
+      "rows_per_second": 24686.17674665778,
+      "source_bytes": 247453114
+    },
+    {
+      "feature_seconds": 69.76360745797865,
+      "import_seconds": 450.15513187495526,
+      "parquet_bytes": 770283887,
+      "peak_import_rss_bytes": 1298317312,
+      "repetition": 0,
+      "rows": 10000000,
+      "rows_per_second": 22214.5640289575,
+      "source_bytes": 2494531114
+    },
+    {
+      "feature_seconds": 74.79142249998404,
+      "import_seconds": 448.33641066600103,
+      "parquet_bytes": 770283887,
+      "peak_import_rss_bytes": 1299906560,
+      "repetition": 1,
+      "rows": 10000000,
+      "rows_per_second": 22304.679615793553,
+      "source_bytes": 2494531114
+    },
+    {
+      "feature_seconds": 70.70762825000565,
+      "import_seconds": 449.80796629202086,
+      "parquet_bytes": 770283887,
+      "peak_import_rss_bytes": 1301577728,
+      "repetition": 2,
+      "rows": 10000000,
+      "rows_per_second": 22231.709416875638,
+      "source_bytes": 2494531114
+    },
+    {
+      "feature_seconds": 71.67921262502205,
+      "import_seconds": 456.5387714999961,
+      "parquet_bytes": 770283887,
+      "peak_import_rss_bytes": 1332445184,
+      "repetition": 3,
+      "rows": 10000000,
+      "rows_per_second": 21903.944690489636,
+      "source_bytes": 2494531114
+    },
+    {
+      "feature_seconds": 73.27623299998231,
+      "import_seconds": 456.1878042919561,
+      "parquet_bytes": 770283887,
+      "peak_import_rss_bytes": 1293434880,
+      "repetition": 4,
+      "rows": 10000000,
+      "rows_per_second": 21920.796448122688,
+      "source_bytes": 2494531114
+    }
+  ],
+  "performance_targets_met": false,
+  "queries": [
+    {
+      "bytes_read": 1354,
+      "condition": "connection-cold",
+      "query": "accuracy",
+      "repetition": 0,
+      "rows": 100000,
+      "rows_returned": 1,
+      "seconds": 0.002352292009163648
+    },
+    {
+      "bytes_read": 0,
+      "condition": "connection-warm",
+      "query": "accuracy",
+      "repetition": 0,
+      "rows": 100000,
+      "rows_returned": 1,
+      "seconds": 0.0013635000213980675
+    },
+    {
+      "bytes_read": 1498,
+      "condition": "connection-cold",
+      "query": "question_groups",
+      "repetition": 0,
+      "rows": 100000,
+      "rows_returned": 200,
+      "seconds": 0.0014207920175977051
+    },
+    {
+      "bytes_read": 0,
+      "condition": "connection-warm",
+      "query": "question_groups",
+      "repetition": 0,
+      "rows": 100000,
+      "rows_returned": 200,
+      "seconds": 0.001276249997317791
+    },
+    {
+      "bytes_read": 1144,
+      "condition": "connection-cold",
+      "query": "skill_groups",
+      "repetition": 0,
+      "rows": 100000,
+      "rows_returned": 10,
+      "seconds": 0.0024408329627476633
+    },
+    {
+      "bytes_read": 0,
+      "condition": "connection-warm",
+      "query": "skill_groups",
+      "repetition": 0,
+      "rows": 100000,
+      "rows_returned": 10,
+      "seconds": 0.002436709008179605
+    },
+    {
+      "bytes_read": 3402,
+      "condition": "connection-cold",
+      "query": "learner_history",
+      "repetition": 0,
+      "rows": 100000,
+      "rows_returned": 10,
+      "seconds": 0.0030182909686118364
+    },
+    {
+      "bytes_read": 0,
+      "condition": "connection-warm",
+      "query": "learner_history",
+      "repetition": 0,
+      "rows": 100000,
+      "rows_returned": 10,
+      "seconds": 0.002981332945637405
+    },
+    {
+      "bytes_read": 1354,
+      "condition": "connection-cold",
+      "query": "accuracy",
+      "repetition": 1,
+      "rows": 100000,
+      "rows_returned": 1,
+      "seconds": 0.001528959022834897
+    },
+    {
+      "bytes_read": 0,
+      "condition": "connection-warm",
+      "query": "accuracy",
+      "repetition": 1,
+      "rows": 100000,
+      "rows_returned": 1,
+      "seconds": 0.0013676669914275408
+    },
+    {
+      "bytes_read": 1498,
+      "condition": "connection-cold",
+      "query": "question_groups",
+      "repetition": 1,
+      "rows": 100000,
+      "rows_returned": 200,
+      "seconds": 0.001644000003580004
+    },
+    {
+      "bytes_read": 0,
+      "condition": "connection-warm",
+      "query": "question_groups",
+      "repetition": 1,
+      "rows": 100000,
+      "rows_returned": 200,
+      "seconds": 0.001380082976538688
+    },
+    {
+      "bytes_read": 1144,
+      "condition": "connection-cold",
+      "query": "skill_groups",
+      "repetition": 1,
+      "rows": 100000,
+      "rows_returned": 10,
+      "seconds": 0.0026706670178100467
+    },
+    {
+      "bytes_read": 0,
+      "condition": "connection-warm",
+      "query": "skill_groups",
+      "repetition": 1,
+      "rows": 100000,
+      "rows_returned": 10,
+      "seconds": 0.0026281250175088644
+    },
+    {
+      "bytes_read": 3402,
+      "condition": "connection-cold",
+      "query": "learner_history",
+      "repetition": 1,
+      "rows": 100000,
+      "rows_returned": 10,
+      "seconds": 0.0033142499742098153
+    },
+    {
+      "bytes_read": 0,
+      "condition": "connection-warm",
+      "query": "learner_history",
+      "repetition": 1,
+      "rows": 100000,
+      "rows_returned": 10,
+      "seconds": 0.00332866603275761
+    },
+    {
+      "bytes_read": 1354,
+      "condition": "connection-cold",
+      "query": "accuracy",
+      "repetition": 2,
+      "rows": 100000,
+      "rows_returned": 1,
+      "seconds": 0.0016365420306101441
+    },
+    {
+      "bytes_read": 0,
+      "condition": "connection-warm",
+      "query": "accuracy",
+      "repetition": 2,
+      "rows": 100000,
+      "rows_returned": 1,
+      "seconds": 0.001563000027090311
+    },
+    {
+      "bytes_read": 1498,
+      "condition": "connection-cold",
+      "query": "question_groups",
+      "repetition": 2,
+      "rows": 100000,
+      "rows_returned": 200,
+      "seconds": 0.0016047919634729624
+    },
+    {
+      "bytes_read": 0,
+      "condition": "connection-warm",
+      "query": "question_groups",
+      "repetition": 2,
+      "rows": 100000,
+      "rows_returned": 200,
+      "seconds": 0.0013355829869396985
+    },
+    {
+      "bytes_read": 1144,
+      "condition": "connection-cold",
+      "query": "skill_groups",
+      "repetition": 2,
+      "rows": 100000,
+      "rows_returned": 10,
+      "seconds": 0.0026826660032384098
+    },
+    {
+      "bytes_read": 0,
+      "condition": "connection-warm",
+      "query": "skill_groups",
+      "repetition": 2,
+      "rows": 100000,
+      "rows_returned": 10,
+      "seconds": 0.002587374998256564
+    },
+    {
+      "bytes_read": 3402,
+      "condition": "connection-cold",
+      "query": "learner_history",
+      "repetition": 2,
+      "rows": 100000,
+      "rows_returned": 10,
+      "seconds": 0.003213374991901219
+    },
+    {
+      "bytes_read": 0,
+      "condition": "connection-warm",
+      "query": "learner_history",
+      "repetition": 2,
+      "rows": 100000,
+      "rows_returned": 10,
+      "seconds": 0.0031105829984880984
+    },
+    {
+      "bytes_read": 1354,
+      "condition": "connection-cold",
+      "query": "accuracy",
+      "repetition": 3,
+      "rows": 100000,
+      "rows_returned": 1,
+      "seconds": 0.0016948329866863787
+    },
+    {
+      "bytes_read": 0,
+      "condition": "connection-warm",
+      "query": "accuracy",
+      "repetition": 3,
+      "rows": 100000,
+      "rows_returned": 1,
+      "seconds": 0.001421875029336661
+    },
+    {
+      "bytes_read": 1498,
+      "condition": "connection-cold",
+      "query": "question_groups",
+      "repetition": 3,
+      "rows": 100000,
+      "rows_returned": 200,
+      "seconds": 0.0014657499850727618
+    },
+    {
+      "bytes_read": 0,
+      "condition": "connection-warm",
+      "query": "question_groups",
+      "repetition": 3,
+      "rows": 100000,
+      "rows_returned": 200,
+      "seconds": 0.0013167920405976474
+    },
+    {
+      "bytes_read": 1144,
+      "condition": "connection-cold",
+      "query": "skill_groups",
+      "repetition": 3,
+      "rows": 100000,
+      "rows_returned": 10,
+      "seconds": 0.0026069169980473816
+    },
+    {
+      "bytes_read": 0,
+      "condition": "connection-warm",
+      "query": "skill_groups",
+      "repetition": 3,
+      "rows": 100000,
+      "rows_returned": 10,
+      "seconds": 0.0025560830254107714
+    },
+    {
+      "bytes_read": 3402,
+      "condition": "connection-cold",
+      "query": "learner_history",
+      "repetition": 3,
+      "rows": 100000,
+      "rows_returned": 10,
+      "seconds": 0.003259124991018325
+    },
+    {
+      "bytes_read": 0,
+      "condition": "connection-warm",
+      "query": "learner_history",
+      "repetition": 3,
+      "rows": 100000,
+      "rows_returned": 10,
+      "seconds": 0.0031470830435864627
+    },
+    {
+      "bytes_read": 1354,
+      "condition": "connection-cold",
+      "query": "accuracy",
+      "repetition": 4,
+      "rows": 100000,
+      "rows_returned": 1,
+      "seconds": 0.0015173329738900065
+    },
+    {
+      "bytes_read": 0,
+      "condition": "connection-warm",
+      "query": "accuracy",
+      "repetition": 4,
+      "rows": 100000,
+      "rows_returned": 1,
+      "seconds": 0.0014215419651009142
+    },
+    {
+      "bytes_read": 1498,
+      "condition": "connection-cold",
+      "query": "question_groups",
+      "repetition": 4,
+      "rows": 100000,
+      "rows_returned": 200,
+      "seconds": 0.0014312499552033842
+    },
+    {
+      "bytes_read": 0,
+      "condition": "connection-warm",
+      "query": "question_groups",
+      "repetition": 4,
+      "rows": 100000,
+      "rows_returned": 200,
+      "seconds": 0.0012235000031068921
+    },
+    {
+      "bytes_read": 1144,
+      "condition": "connection-cold",
+      "query": "skill_groups",
+      "repetition": 4,
+      "rows": 100000,
+      "rows_returned": 10,
+      "seconds": 0.0024689160054549575
+    },
+    {
+      "bytes_read": 0,
+      "condition": "connection-warm",
+      "query": "skill_groups",
+      "repetition": 4,
+      "rows": 100000,
+      "rows_returned": 10,
+      "seconds": 0.002384041959885508
+    },
+    {
+      "bytes_read": 3402,
+      "condition": "connection-cold",
+      "query": "learner_history",
+      "repetition": 4,
+      "rows": 100000,
+      "rows_returned": 10,
+      "seconds": 0.0031035830033943057
+    },
+    {
+      "bytes_read": 0,
+      "condition": "connection-warm",
+      "query": "learner_history",
+      "repetition": 4,
+      "rows": 100000,
+      "rows_returned": 10,
+      "seconds": 0.0030970419757068157
+    },
+    {
+      "bytes_read": 10831,
+      "condition": "connection-cold",
+      "query": "accuracy",
+      "repetition": 0,
+      "rows": 1000000,
+      "rows_returned": 1,
+      "seconds": 0.009658291994128376
+    },
+    {
+      "bytes_read": 0,
+      "condition": "connection-warm",
+      "query": "accuracy",
+      "repetition": 0,
+      "rows": 1000000,
+      "rows_returned": 1,
+      "seconds": 0.008823457988910377
+    },
+    {
+      "bytes_read": 11998,
+      "condition": "connection-cold",
+      "query": "question_groups",
+      "repetition": 0,
+      "rows": 1000000,
+      "rows_returned": 200,
+      "seconds": 0.0047912090085446835
+    },
+    {
+      "bytes_read": 0,
+      "condition": "connection-warm",
+      "query": "question_groups",
+      "repetition": 0,
+      "rows": 1000000,
+      "rows_returned": 200,
+      "seconds": 0.004648250003810972
+    },
+    {
+      "bytes_read": 9152,
+      "condition": "connection-cold",
+      "query": "skill_groups",
+      "repetition": 0,
+      "rows": 1000000,
+      "rows_returned": 10,
+      "seconds": 0.01532254199264571
+    },
+    {
+      "bytes_read": 0,
+      "condition": "connection-warm",
+      "query": "skill_groups",
+      "repetition": 0,
+      "rows": 1000000,
+      "rows_returned": 10,
+      "seconds": 0.016157999983988702
+    },
+    {
+      "bytes_read": 27215,
+      "condition": "connection-cold",
+      "query": "learner_history",
+      "repetition": 0,
+      "rows": 1000000,
+      "rows_returned": 100,
+      "seconds": 0.023379416030365974
+    },
+    {
+      "bytes_read": 0,
+      "condition": "connection-warm",
+      "query": "learner_history",
+      "repetition": 0,
+      "rows": 1000000,
+      "rows_returned": 100,
+      "seconds": 0.02309695800067857
+    },
+    {
+      "bytes_read": 10831,
+      "condition": "connection-cold",
+      "query": "accuracy",
+      "repetition": 1,
+      "rows": 1000000,
+      "rows_returned": 1,
+      "seconds": 0.008216749993152916
+    },
+    {
+      "bytes_read": 0,
+      "condition": "connection-warm",
+      "query": "accuracy",
+      "repetition": 1,
+      "rows": 1000000,
+      "rows_returned": 1,
+      "seconds": 0.007730124983936548
+    },
+    {
+      "bytes_read": 11998,
+      "condition": "connection-cold",
+      "query": "question_groups",
+      "repetition": 1,
+      "rows": 1000000,
+      "rows_returned": 200,
+      "seconds": 0.004457459028344601
+    },
+    {
+      "bytes_read": 0,
+      "condition": "connection-warm",
+      "query": "question_groups",
+      "repetition": 1,
+      "rows": 1000000,
+      "rows_returned": 200,
+      "seconds": 0.004873375000897795
+    },
+    {
+      "bytes_read": 9152,
+      "condition": "connection-cold",
+      "query": "skill_groups",
+      "repetition": 1,
+      "rows": 1000000,
+      "rows_returned": 10,
+      "seconds": 0.01571079099085182
+    },
+    {
+      "bytes_read": 0,
+      "condition": "connection-warm",
+      "query": "skill_groups",
+      "repetition": 1,
+      "rows": 1000000,
+      "rows_returned": 10,
+      "seconds": 0.015485709009226412
+    },
+    {
+      "bytes_read": 27215,
+      "condition": "connection-cold",
+      "query": "learner_history",
+      "repetition": 1,
+      "rows": 1000000,
+      "rows_returned": 100,
+      "seconds": 0.022967665980104357
+    },
+    {
+      "bytes_read": 0,
+      "condition": "connection-warm",
+      "query": "learner_history",
+      "repetition": 1,
+      "rows": 1000000,
+      "rows_returned": 100,
+      "seconds": 0.02281199995195493
+    },
+    {
+      "bytes_read": 10831,
+      "condition": "connection-cold",
+      "query": "accuracy",
+      "repetition": 2,
+      "rows": 1000000,
+      "rows_returned": 1,
+      "seconds": 0.008363166998606175
+    },
+    {
+      "bytes_read": 0,
+      "condition": "connection-warm",
+      "query": "accuracy",
+      "repetition": 2,
+      "rows": 1000000,
+      "rows_returned": 1,
+      "seconds": 0.007814207987394184
+    },
+    {
+      "bytes_read": 11998,
+      "condition": "connection-cold",
+      "query": "question_groups",
+      "repetition": 2,
+      "rows": 1000000,
+      "rows_returned": 200,
+      "seconds": 0.004607750044669956
+    },
+    {
+      "bytes_read": 0,
+      "condition": "connection-warm",
+      "query": "question_groups",
+      "repetition": 2,
+      "rows": 1000000,
+      "rows_returned": 200,
+      "seconds": 0.00455675000557676
+    },
+    {
+      "bytes_read": 9152,
+      "condition": "connection-cold",
+      "query": "skill_groups",
+      "repetition": 2,
+      "rows": 1000000,
+      "rows_returned": 10,
+      "seconds": 0.015670833992771804
+    },
+    {
+      "bytes_read": 0,
+      "condition": "connection-warm",
+      "query": "skill_groups",
+      "repetition": 2,
+      "rows": 1000000,
+      "rows_returned": 10,
+      "seconds": 0.015860125015024096
+    },
+    {
+      "bytes_read": 27215,
+      "condition": "connection-cold",
+      "query": "learner_history",
+      "repetition": 2,
+      "rows": 1000000,
+      "rows_returned": 100,
+      "seconds": 0.02309791703009978
+    },
+    {
+      "bytes_read": 0,
+      "condition": "connection-warm",
+      "query": "learner_history",
+      "repetition": 2,
+      "rows": 1000000,
+      "rows_returned": 100,
+      "seconds": 0.023149374988861382
+    },
+    {
+      "bytes_read": 10831,
+      "condition": "connection-cold",
+      "query": "accuracy",
+      "repetition": 3,
+      "rows": 1000000,
+      "rows_returned": 1,
+      "seconds": 0.010333915997762233
+    },
+    {
+      "bytes_read": 0,
+      "condition": "connection-warm",
+      "query": "accuracy",
+      "repetition": 3,
+      "rows": 1000000,
+      "rows_returned": 1,
+      "seconds": 0.009612791007384658
+    },
+    {
+      "bytes_read": 11998,
+      "condition": "connection-cold",
+      "query": "question_groups",
+      "repetition": 3,
+      "rows": 1000000,
+      "rows_returned": 200,
+      "seconds": 0.004969583009369671
+    },
+    {
+      "bytes_read": 0,
+      "condition": "connection-warm",
+      "query": "question_groups",
+      "repetition": 3,
+      "rows": 1000000,
+      "rows_returned": 200,
+      "seconds": 0.004703165963292122
+    },
+    {
+      "bytes_read": 9152,
+      "condition": "connection-cold",
+      "query": "skill_groups",
+      "repetition": 3,
+      "rows": 1000000,
+      "rows_returned": 10,
+      "seconds": 0.016110749973449856
+    },
+    {
+      "bytes_read": 0,
+      "condition": "connection-warm",
+      "query": "skill_groups",
+      "repetition": 3,
+      "rows": 1000000,
+      "rows_returned": 10,
+      "seconds": 0.016490165959112346
+    },
+    {
+      "bytes_read": 27215,
+      "condition": "connection-cold",
+      "query": "learner_history",
+      "repetition": 3,
+      "rows": 1000000,
+      "rows_returned": 100,
+      "seconds": 0.02346258400939405
+    },
+    {
+      "bytes_read": 0,
+      "condition": "connection-warm",
+      "query": "learner_history",
+      "repetition": 3,
+      "rows": 1000000,
+      "rows_returned": 100,
+      "seconds": 0.02387991704745218
+    },
+    {
+      "bytes_read": 10831,
+      "condition": "connection-cold",
+      "query": "accuracy",
+      "repetition": 4,
+      "rows": 1000000,
+      "rows_returned": 1,
+      "seconds": 0.008468082989566028
+    },
+    {
+      "bytes_read": 0,
+      "condition": "connection-warm",
+      "query": "accuracy",
+      "repetition": 4,
+      "rows": 1000000,
+      "rows_returned": 1,
+      "seconds": 0.007975624990649521
+    },
+    {
+      "bytes_read": 11998,
+      "condition": "connection-cold",
+      "query": "question_groups",
+      "repetition": 4,
+      "rows": 1000000,
+      "rows_returned": 200,
+      "seconds": 0.004509499995037913
+    },
+    {
+      "bytes_read": 0,
+      "condition": "connection-warm",
+      "query": "question_groups",
+      "repetition": 4,
+      "rows": 1000000,
+      "rows_returned": 200,
+      "seconds": 0.00439150002785027
+    },
+    {
+      "bytes_read": 9152,
+      "condition": "connection-cold",
+      "query": "skill_groups",
+      "repetition": 4,
+      "rows": 1000000,
+      "rows_returned": 10,
+      "seconds": 0.014771540998481214
+    },
+    {
+      "bytes_read": 0,
+      "condition": "connection-warm",
+      "query": "skill_groups",
+      "repetition": 4,
+      "rows": 1000000,
+      "rows_returned": 10,
+      "seconds": 0.015480374975595623
+    },
+    {
+      "bytes_read": 27215,
+      "condition": "connection-cold",
+      "query": "learner_history",
+      "repetition": 4,
+      "rows": 1000000,
+      "rows_returned": 100,
+      "seconds": 0.022397833003196865
+    },
+    {
+      "bytes_read": 0,
+      "condition": "connection-warm",
+      "query": "learner_history",
+      "repetition": 4,
+      "rows": 1000000,
+      "rows_returned": 100,
+      "seconds": 0.02199070801725611
+    },
+    {
+      "bytes_read": 103580,
+      "condition": "connection-cold",
+      "query": "accuracy",
+      "repetition": 0,
+      "rows": 10000000,
+      "rows_returned": 1,
+      "seconds": 0.10376995801925659
+    },
+    {
+      "bytes_read": 0,
+      "condition": "connection-warm",
+      "query": "accuracy",
+      "repetition": 0,
+      "rows": 10000000,
+      "rows_returned": 1,
+      "seconds": 0.07524070801446214
+    },
+    {
+      "bytes_read": 114843,
+      "condition": "connection-cold",
+      "query": "question_groups",
+      "repetition": 0,
+      "rows": 10000000,
+      "rows_returned": 200,
+      "seconds": 0.045650542015209794
+    },
+    {
+      "bytes_read": 0,
+      "condition": "connection-warm",
+      "query": "question_groups",
+      "repetition": 0,
+      "rows": 10000000,
+      "rows_returned": 200,
+      "seconds": 0.037150458025280386
+    },
+    {
+      "bytes_read": 87454,
+      "condition": "connection-cold",
+      "query": "skill_groups",
+      "repetition": 0,
+      "rows": 10000000,
+      "rows_returned": 10,
+      "seconds": 0.1420342919882387
+    },
+    {
+      "bytes_read": 0,
+      "condition": "connection-warm",
+      "query": "skill_groups",
+      "repetition": 0,
+      "rows": 10000000,
+      "rows_returned": 10,
+      "seconds": 0.14415033400291577
+    },
+    {
+      "bytes_read": 54432,
+      "condition": "connection-cold",
+      "query": "learner_history",
+      "repetition": 0,
+      "rows": 10000000,
+      "rows_returned": 100,
+      "seconds": 0.06972558400593698
+    },
+    {
+      "bytes_read": 0,
+      "condition": "connection-warm",
+      "query": "learner_history",
+      "repetition": 0,
+      "rows": 10000000,
+      "rows_returned": 100,
+      "seconds": 0.056102083006408066
+    },
+    {
+      "bytes_read": 103580,
+      "condition": "connection-cold",
+      "query": "accuracy",
+      "repetition": 1,
+      "rows": 10000000,
+      "rows_returned": 1,
+      "seconds": 0.3101690420298837
+    },
+    {
+      "bytes_read": 0,
+      "condition": "connection-warm",
+      "query": "accuracy",
+      "repetition": 1,
+      "rows": 10000000,
+      "rows_returned": 1,
+      "seconds": 0.08423350000521168
+    },
+    {
+      "bytes_read": 114843,
+      "condition": "connection-cold",
+      "query": "question_groups",
+      "repetition": 1,
+      "rows": 10000000,
+      "rows_returned": 200,
+      "seconds": 0.16562704101670533
+    },
+    {
+      "bytes_read": 0,
+      "condition": "connection-warm",
+      "query": "question_groups",
+      "repetition": 1,
+      "rows": 10000000,
+      "rows_returned": 200,
+      "seconds": 0.04140112502500415
+    },
+    {
+      "bytes_read": 87454,
+      "condition": "connection-cold",
+      "query": "skill_groups",
+      "repetition": 1,
+      "rows": 10000000,
+      "rows_returned": 10,
+      "seconds": 0.16542991698952392
+    },
+    {
+      "bytes_read": 0,
+      "condition": "connection-warm",
+      "query": "skill_groups",
+      "repetition": 1,
+      "rows": 10000000,
+      "rows_returned": 10,
+      "seconds": 0.1652443339698948
+    },
+    {
+      "bytes_read": 54432,
+      "condition": "connection-cold",
+      "query": "learner_history",
+      "repetition": 1,
+      "rows": 10000000,
+      "rows_returned": 100,
+      "seconds": 0.16452312498586252
+    },
+    {
+      "bytes_read": 0,
+      "condition": "connection-warm",
+      "query": "learner_history",
+      "repetition": 1,
+      "rows": 10000000,
+      "rows_returned": 100,
+      "seconds": 0.06092545803403482
+    },
+    {
+      "bytes_read": 103580,
+      "condition": "connection-cold",
+      "query": "accuracy",
+      "repetition": 2,
+      "rows": 10000000,
+      "rows_returned": 1,
+      "seconds": 0.10003295802744105
+    },
+    {
+      "bytes_read": 0,
+      "condition": "connection-warm",
+      "query": "accuracy",
+      "repetition": 2,
+      "rows": 10000000,
+      "rows_returned": 1,
+      "seconds": 0.07134629198117182
+    },
+    {
+      "bytes_read": 114843,
+      "condition": "connection-cold",
+      "query": "question_groups",
+      "repetition": 2,
+      "rows": 10000000,
+      "rows_returned": 200,
+      "seconds": 0.04291149997152388
+    },
+    {
+      "bytes_read": 0,
+      "condition": "connection-warm",
+      "query": "question_groups",
+      "repetition": 2,
+      "rows": 10000000,
+      "rows_returned": 200,
+      "seconds": 0.03671816602582112
+    },
+    {
+      "bytes_read": 87454,
+      "condition": "connection-cold",
+      "query": "skill_groups",
+      "repetition": 2,
+      "rows": 10000000,
+      "rows_returned": 10,
+      "seconds": 0.14242500002728775
+    },
+    {
+      "bytes_read": 0,
+      "condition": "connection-warm",
+      "query": "skill_groups",
+      "repetition": 2,
+      "rows": 10000000,
+      "rows_returned": 10,
+      "seconds": 0.14395262498874217
+    },
+    {
+      "bytes_read": 52731,
+      "condition": "connection-cold",
+      "query": "learner_history",
+      "repetition": 2,
+      "rows": 10000000,
+      "rows_returned": 100,
+      "seconds": 0.07803395803784952
+    },
+    {
+      "bytes_read": 1701,
+      "condition": "connection-warm",
+      "query": "learner_history",
+      "repetition": 2,
+      "rows": 10000000,
+      "rows_returned": 100,
+      "seconds": 0.05567516601877287
+    },
+    {
+      "bytes_read": 103580,
+      "condition": "connection-cold",
+      "query": "accuracy",
+      "repetition": 3,
+      "rows": 10000000,
+      "rows_returned": 1,
+      "seconds": 0.16793279099510983
+    },
+    {
+      "bytes_read": 0,
+      "condition": "connection-warm",
+      "query": "accuracy",
+      "repetition": 3,
+      "rows": 10000000,
+      "rows_returned": 1,
+      "seconds": 0.07567975000711158
+    },
+    {
+      "bytes_read": 114843,
+      "condition": "connection-cold",
+      "query": "question_groups",
+      "repetition": 3,
+      "rows": 10000000,
+      "rows_returned": 200,
+      "seconds": 0.12366650003241375
+    },
+    {
+      "bytes_read": 0,
+      "condition": "connection-warm",
+      "query": "question_groups",
+      "repetition": 3,
+      "rows": 10000000,
+      "rows_returned": 200,
+      "seconds": 0.04003379197092727
+    },
+    {
+      "bytes_read": 87454,
+      "condition": "connection-cold",
+      "query": "skill_groups",
+      "repetition": 3,
+      "rows": 10000000,
+      "rows_returned": 10,
+      "seconds": 0.1455042920424603
+    },
+    {
+      "bytes_read": 0,
+      "condition": "connection-warm",
+      "query": "skill_groups",
+      "repetition": 3,
+      "rows": 10000000,
+      "rows_returned": 10,
+      "seconds": 0.15447112498804927
+    },
+    {
+      "bytes_read": 52731,
+      "condition": "connection-cold",
+      "query": "learner_history",
+      "repetition": 3,
+      "rows": 10000000,
+      "rows_returned": 100,
+      "seconds": 0.16306674998486415
+    },
+    {
+      "bytes_read": 1701,
+      "condition": "connection-warm",
+      "query": "learner_history",
+      "repetition": 3,
+      "rows": 10000000,
+      "rows_returned": 100,
+      "seconds": 0.057509624981321394
+    },
+    {
+      "bytes_read": 103580,
+      "condition": "connection-cold",
+      "query": "accuracy",
+      "repetition": 4,
+      "rows": 10000000,
+      "rows_returned": 1,
+      "seconds": 0.11189574998570606
+    },
+    {
+      "bytes_read": 0,
+      "condition": "connection-warm",
+      "query": "accuracy",
+      "repetition": 4,
+      "rows": 10000000,
+      "rows_returned": 1,
+      "seconds": 0.07484324998222291
+    },
+    {
+      "bytes_read": 114843,
+      "condition": "connection-cold",
+      "query": "question_groups",
+      "repetition": 4,
+      "rows": 10000000,
+      "rows_returned": 200,
+      "seconds": 0.048814082983881235
+    },
+    {
+      "bytes_read": 0,
+      "condition": "connection-warm",
+      "query": "question_groups",
+      "repetition": 4,
+      "rows": 10000000,
+      "rows_returned": 200,
+      "seconds": 0.03918995801359415
+    },
+    {
+      "bytes_read": 87454,
+      "condition": "connection-cold",
+      "query": "skill_groups",
+      "repetition": 4,
+      "rows": 10000000,
+      "rows_returned": 10,
+      "seconds": 0.1591337500140071
+    },
+    {
+      "bytes_read": 0,
+      "condition": "connection-warm",
+      "query": "skill_groups",
+      "repetition": 4,
+      "rows": 10000000,
+      "rows_returned": 10,
+      "seconds": 0.19664499995997176
+    },
+    {
+      "bytes_read": 54432,
+      "condition": "connection-cold",
+      "query": "learner_history",
+      "repetition": 4,
+      "rows": 10000000,
+      "rows_returned": 100,
+      "seconds": 0.0762775830226019
+    },
+    {
+      "bytes_read": 0,
+      "condition": "connection-warm",
+      "query": "learner_history",
+      "repetition": 4,
+      "rows": 10000000,
+      "rows_returned": 100,
+      "seconds": 0.06068079097894952
+    }
+  ],
+  "summaries": {
+    "100000": {
+      "maximum_import_rss_bytes": 348422144,
+      "median_rows_per_second": 26411.02322415388,
+      "queries": {
+        "accuracy/connection-cold": {
+          "p50_seconds": 0.0016365420306101441,
+          "p95_seconds": 0.002220800204668194,
+          "repetitions": 5
+        },
+        "accuracy/connection-warm": {
+          "p50_seconds": 0.0014215419651009142,
+          "p95_seconds": 0.001534775027539581,
+          "repetitions": 5
+        },
+        "learner_history/connection-cold": {
+          "p50_seconds": 0.003213374991901219,
+          "p95_seconds": 0.0033032249775715172,
+          "repetitions": 5
+        },
+        "learner_history/connection-warm": {
+          "p50_seconds": 0.0031105829984880984,
+          "p95_seconds": 0.0032923494349233807,
+          "repetitions": 5
+        },
+        "question_groups/connection-cold": {
+          "p50_seconds": 0.0014657499850727618,
+          "p95_seconds": 0.0016361583955585956,
+          "repetitions": 5
+        },
+        "question_groups/connection-warm": {
+          "p50_seconds": 0.0013167920405976474,
+          "p95_seconds": 0.00137118297861889,
+          "repetitions": 5
+        },
+        "skill_groups/connection-cold": {
+          "p50_seconds": 0.0026069169980473816,
+          "p95_seconds": 0.002680266206152737,
+          "repetitions": 5
+        },
+        "skill_groups/connection-warm": {
+          "p50_seconds": 0.0025560830254107714,
+          "p95_seconds": 0.0026199750136584044,
+          "repetitions": 5
+        }
+      }
+    },
+    "1000000": {
+      "maximum_import_rss_bytes": 465584128,
+      "median_rows_per_second": 24900.517711247892,
+      "queries": {
+        "accuracy/connection-cold": {
+          "p50_seconds": 0.008468082989566028,
+          "p95_seconds": 0.010198791197035461,
+          "repetitions": 5
+        },
+        "accuracy/connection-warm": {
+          "p50_seconds": 0.007975624990649521,
+          "p95_seconds": 0.009454924403689802,
+          "repetitions": 5
+        },
+        "learner_history/connection-cold": {
+          "p50_seconds": 0.02309791703009978,
+          "p95_seconds": 0.023445950413588434,
+          "repetitions": 5
+        },
+        "learner_history/connection-warm": {
+          "p50_seconds": 0.02309695800067857,
+          "p95_seconds": 0.023733808635734023,
+          "repetitions": 5
+        },
+        "question_groups/connection-cold": {
+          "p50_seconds": 0.004607750044669956,
+          "p95_seconds": 0.004933908209204673,
+          "repetitions": 5
+        },
+        "question_groups/connection-warm": {
+          "p50_seconds": 0.004648250003810972,
+          "p95_seconds": 0.0048393331933766605,
+          "repetitions": 5
+        },
+        "skill_groups/connection-cold": {
+          "p50_seconds": 0.015670833992771804,
+          "p95_seconds": 0.016030758176930247,
+          "repetitions": 5
+        },
+        "skill_groups/connection-warm": {
+          "p50_seconds": 0.015860125015024096,
+          "p95_seconds": 0.016423732764087616,
+          "repetitions": 5
+        }
+      }
+    },
+    "10000000": {
+      "maximum_import_rss_bytes": 1332445184,
+      "median_rows_per_second": 22214.5640289575,
+      "queries": {
+        "accuracy/connection-cold": {
+          "p50_seconds": 0.11189574998570606,
+          "p95_seconds": 0.2817217918229289,
+          "repetitions": 5
+        },
+        "accuracy/connection-warm": {
+          "p50_seconds": 0.07524070801446214,
+          "p95_seconds": 0.08252275000559166,
+          "repetitions": 5
+        },
+        "learner_history/connection-cold": {
+          "p50_seconds": 0.07803395803784952,
+          "p95_seconds": 0.16423184998566284,
+          "repetitions": 5
+        },
+        "learner_history/connection-warm": {
+          "p50_seconds": 0.057509624981321394,
+          "p95_seconds": 0.06087652462301776,
+          "repetitions": 5
+        },
+        "question_groups/connection-cold": {
+          "p50_seconds": 0.048814082983881235,
+          "p95_seconds": 0.15723493281984702,
+          "repetitions": 5
+        },
+        "question_groups/connection-warm": {
+          "p50_seconds": 0.03918995801359415,
+          "p95_seconds": 0.04112765841418877,
+          "repetitions": 5
+        },
+        "skill_groups/connection-cold": {
+          "p50_seconds": 0.1455042920424603,
+          "p95_seconds": 0.16417068359442055,
+          "repetitions": 5
+        },
+        "skill_groups/connection-warm": {
+          "p50_seconds": 0.15447112498804927,
+          "p95_seconds": 0.19036486676195635,
+          "repetitions": 5
+        }
+      }
+    }
+  }
+}
