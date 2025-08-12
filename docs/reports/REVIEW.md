@@ -6,6 +6,7 @@ This was a separate skeptical pass over source wiring, data contracts, saved run
 
 | Finding | Change and evidence |
 | --- | --- |
+| A fresh clone failed before tests because editable Python installation required the ignored client build directory. | A wheel-only build hook leaves editable installation independent of generated web assets, while distributable wheels require and bundle the built client. Clean-clone installation and installed-wheel checks cover both paths. |
 | Canonical JSON could construct an arbitrarily large object before rejection. Legacy parsing retained a growing question dictionary. | Bounded byte framing and scalar question-local parser position replaced those paths. Oversized records, malformed arrays, nested Unicode and continuation are tested in [streaming tests](../../tests/test_json_streaming.py). |
 | Integer/timestamp edge cases could escape validation into storage failures. | Canonical sequences enforce signed 64-bit bounds and unsupported UTC conversions become validation errors. |
 | Mixed event/bundle duration scope could omit a valid bundle in overview and session tables. | Separate eligibility/ranking preserves each event and one known bundle. The [independent boundary fixture](../../tests/test_analytics_boundaries.py) checks both totals. |
