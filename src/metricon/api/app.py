@@ -124,6 +124,19 @@ def create_app(settings: Settings | None = None, start_jobs: bool = True) -> Fas
             raise HTTPException(404, "Upload does not exist")
         return path
 
+    def committed_file(identifier: str, filename: str) -> Path:
+        artifact = catalog.artifact(identifier)
+        expected = artifact["manifest"]["files"].get(filename)
+        if expected is None:
+            raise HTTPException(404, "File not in committed artifact")
+        directory = (catalog.root / "artifacts" / identifier).resolve()
+        path = (directory / filename).resolve()
+        if not path.is_relative_to(directory):
+            raise HTTPException(404, "File outside committed artifact")
+        if not path.is_file() or file_hash(path) != expected:
+            raise HTTPException(409, "Committed artifact checksum mismatch or missing file")
+        return path
+
     @app.get("/api/health")
     def health() -> dict[str, Any]:
         return {
@@ -228,16 +241,20 @@ def create_app(settings: Settings | None = None, start_jobs: bool = True) -> Fas
     @app.post(
         "/api/workspaces/{workspace_id}/experiments", response_model=JobResponse, status_code=202
     )
-    def queue_experiment(workspace_id: str, body: ExperimentRequest) -> dict[str, Any]:
+    def queue_experiment(
+        workspace_id: str, body: ExperimentRequest, dataset_id: str | None = None
+    ) -> dict[str, Any]:
         ExperimentConfig(**body.model_dump()).validate()
-        return coordinator.submit(workspace_id, "experiment", body.model_dump())
+        return coordinator.submit(workspace_id, "experiment", body.model_dump(), dataset_id)
 
     @app.post(
         "/api/workspaces/{workspace_id}/simulations", response_model=JobResponse, status_code=202
     )
-    def queue_simulation(workspace_id: str, body: SimulationRequest) -> dict[str, Any]:
+    def queue_simulation(
+        workspace_id: str, body: SimulationRequest, dataset_id: str | None = None
+    ) -> dict[str, Any]:
         SimulationConfig(**body.model_dump()).validate()
-        return coordinator.submit(workspace_id, "simulation", body.model_dump())
+        return coordinator.submit(workspace_id, "simulation", body.model_dump(), dataset_id)
 
     @app.get("/api/workspaces/{workspace_id}/jobs", response_model=list[JobResponse])
     def jobs(workspace_id: str, limit: int = Query(50, ge=1, le=200)) -> list[dict[str, Any]]:
@@ -386,7 +403,7 @@ def create_app(settings: Settings | None = None, start_jobs: bool = True) -> Fas
         if metadata["kind"] not in {"experiment", "simulation"}:
             raise ValueError("Artifact has no research report")
         filename = "report.json" if metadata["kind"] == "experiment" else "simulation.json"
-        payload = read_json(catalog.root / "artifacts" / artifact_id / filename)
+        payload = read_json(committed_file(artifact_id, filename))
         if full or metadata["kind"] == "simulation":
             return payload
         for fold in payload["folds"]:
@@ -396,12 +413,7 @@ def create_app(settings: Settings | None = None, start_jobs: bool = True) -> Fas
 
     @app.get("/api/artifacts/{artifact_id}/files/{filename:path}")
     def download_artifact(artifact_id: str, filename: str) -> FileResponse:
-        artifact = catalog.artifact(artifact_id)
-        if filename not in artifact["manifest"]["files"]:
-            raise HTTPException(404, "File not in committed artifact")
-        path = catalog.root / "artifacts" / artifact_id / filename
-        if file_hash(path) != artifact["manifest"]["files"][filename]:
-            raise HTTPException(409, "Artifact checksum mismatch")
+        path = committed_file(artifact_id, filename)
         return FileResponse(path, filename=Path(filename).name)
 
     @app.get("/api/artifacts/{artifact_id}/models/{name}/parameters")
@@ -409,10 +421,7 @@ def create_app(settings: Settings | None = None, start_jobs: bool = True) -> Fas
         artifact_id: str, name: str, fold: int = Query(0, ge=0, le=9)
     ) -> dict[str, Any]:
         filename = f"fold-{fold}/{name}.model.json"
-        artifact = catalog.artifact(artifact_id)
-        if filename not in artifact["manifest"]["files"]:
-            raise HTTPException(404, "Model not present in artifact")
-        payload = read_json(catalog.root / "artifacts" / artifact_id / filename)
+        payload = read_json(committed_file(artifact_id, filename))
         parameters = payload["parameters"]
         if parameters["family"] == "logistic":
             from metricon.models.baselines import LogisticHistory
@@ -453,6 +462,7 @@ def create_app(settings: Settings | None = None, start_jobs: bool = True) -> Fas
     ) -> dict[str, Any]:
         from metricon.models.trace import replay_bkt
 
+        committed_file(artifact_id, f"fold-{fold}/{name}.model.json")
         return replay_bkt(catalog, artifact_id, name, learner_id, offset, limit, fold)
 
     @app.get("/api/artifacts/{artifact_id}/predictions")
@@ -469,6 +479,7 @@ def create_app(settings: Settings | None = None, start_jobs: bool = True) -> Fas
     ) -> dict[str, Any]:
         from metricon.evaluation.predictions import PredictionInspector
 
+        committed_file(artifact_id, f"fold-{fold}/predictions.parquet")
         return PredictionInspector(catalog, artifact_id, fold).rows(
             model, partition, learner_id, question_id, offset, limit, sort
         )
@@ -484,6 +495,7 @@ def create_app(settings: Settings | None = None, start_jobs: bool = True) -> Fas
     ) -> dict[str, Any]:
         from metricon.evaluation.predictions import PredictionInspector
 
+        committed_file(artifact_id, f"fold-{fold}/predictions.parquet")
         return PredictionInspector(catalog, artifact_id, fold).slice(
             model, learner_id, skill, calibrated
         )

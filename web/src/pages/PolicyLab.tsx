@@ -109,18 +109,22 @@ export function PolicyLab({
   });
   const simulationJob = useMutation({
     mutationFn: () =>
-      api.simulate(workspace, {
-        seed,
-        repetitions,
-        regime,
-        budget_mode: budgetMode,
-        budget_seconds: budget * 60,
-        skills: skills
-          .split(",")
-          .map((value) => value.trim())
-          .filter(Boolean),
-        assumed_duration_seconds: duration,
-      }),
+      api.simulate(
+        workspace,
+        {
+          seed,
+          repetitions,
+          regime,
+          budget_mode: budgetMode,
+          budget_seconds: budget * 60,
+          skills: skills
+            .split(",")
+            .map((value) => value.trim())
+            .filter(Boolean),
+          assumed_duration_seconds: duration,
+        },
+        dataset,
+      ),
     onSuccess: (job) => {
       onJob(job.id);
       void queryClient.invalidateQueries({ queryKey: ["jobs", workspace] });

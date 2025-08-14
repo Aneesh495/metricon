@@ -40,9 +40,11 @@ const PredictionPageSchema = z.object({
 export function PredictionInspector({
   artifact,
   model,
+  fold = 0,
 }: {
   artifact: string;
   model: string;
+  fold?: number;
 }) {
   const [offset, setOffset] = useState(0);
   const [sort, setSort] = useState("largest_error");
@@ -51,7 +53,15 @@ export function PredictionInspector({
   const [skill, setSkill] = useState("");
   const deferredSkill = useDeferredValue(skill);
   const rows = useQuery({
-    queryKey: ["predictions", artifact, model, offset, sort, deferredLearner],
+    queryKey: [
+      "predictions",
+      artifact,
+      model,
+      fold,
+      offset,
+      sort,
+      deferredLearner,
+    ],
     queryFn: () =>
       api.predictions(
         artifact,
@@ -59,6 +69,7 @@ export function PredictionInspector({
         offset,
         sort,
         deferredLearner || undefined,
+        fold,
       ),
   });
   const slice = useQuery({
@@ -66,6 +77,7 @@ export function PredictionInspector({
       "prediction-slice",
       artifact,
       model,
+      fold,
       deferredLearner,
       deferredSkill,
     ],
@@ -75,13 +87,14 @@ export function PredictionInspector({
         model,
         deferredLearner || undefined,
         deferredSkill || undefined,
+        fold,
       ),
   });
   const parsed = PredictionPageSchema.safeParse(rows.data);
   return (
     <Panel
       title="Inspect saved held-out predictions"
-      description="Every row is an actual prediction emitted by the packaged evaluation run."
+      description={`Every row is a saved test prediction from temporal fold ${fold + 1}.`}
     >
       <div className="form-grid">
         <Field label="Diagnostic ordering">

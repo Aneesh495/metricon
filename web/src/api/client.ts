@@ -157,8 +157,16 @@ export const api = {
       upload_id: upload,
       options,
     }),
-  experiment: (workspace: string, options: ExperimentOptions) =>
-    post(`/workspaces/${workspace}/experiments`, JobSchema, options),
+  experiment: (
+    workspace: string,
+    options: ExperimentOptions,
+    dataset?: string,
+  ) =>
+    post(
+      `/workspaces/${workspace}/experiments${parameters({ dataset_id: dataset })}`,
+      JobSchema,
+      options,
+    ),
   jobs: (workspace: string) =>
     request(`/workspaces/${workspace}/jobs`, z.array(JobSchema)),
   job: (id: string) => request(`/jobs/${id}`, JobSchema),
@@ -207,9 +215,10 @@ export const api = {
     right: string,
     left_model: string,
     right_model: string,
+    fold = 0,
   ) =>
     request(
-      `/compare${parameters({ left, right, left_model, right_model })}`,
+      `/compare${parameters({ left, right, left_model, right_model, fold })}`,
       z.record(z.unknown()),
     ),
   artifact: (id: string) => request(`/artifacts/${id}`, ArtifactSchema),
@@ -230,8 +239,12 @@ export const api = {
     ),
   plan: (id: string, body: unknown) =>
     post(`/datasets/${id}/plan`, PlanSchema, body),
-  simulate: (workspace: string, body: unknown) =>
-    post(`/workspaces/${workspace}/simulations`, JobSchema, body),
+  simulate: (workspace: string, body: unknown, dataset?: string) =>
+    post(
+      `/workspaces/${workspace}/simulations${parameters({ dataset_id: dataset })}`,
+      JobSchema,
+      body,
+    ),
   simulation: (id: string) =>
     request(`/artifacts/${id}/report`, SimulationSchema),
   lineage: (id: string) => request(`/lineage/${id}`, z.record(z.unknown())),
@@ -250,9 +263,10 @@ export const api = {
     offset: number,
     sort: string,
     learner?: string,
+    fold = 0,
   ) =>
     request(
-      `/artifacts/${id}/predictions${parameters({ model, offset, sort, learner_id: learner })}`,
+      `/artifacts/${id}/predictions${parameters({ model, offset, sort, learner_id: learner, fold })}`,
       z.record(z.unknown()),
     ),
   predictionSlice: (
@@ -260,9 +274,10 @@ export const api = {
     model: string,
     learner?: string,
     skill?: string,
+    fold = 0,
   ) =>
     request(
-      `/artifacts/${id}/prediction-slice${parameters({ model, learner_id: learner, skill })}`,
+      `/artifacts/${id}/prediction-slice${parameters({ model, learner_id: learner, skill, fold })}`,
       z.object({
         metrics: MetricsSchema,
         population: z.string(),

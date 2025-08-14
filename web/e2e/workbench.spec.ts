@@ -133,7 +133,7 @@ test.describe.serial("Scientific workbench", () => {
     await navigate("Experiment bench");
     const training = page.waitForResponse(
       (response) =>
-        response.url().endsWith(`/api/workspaces/${workspace}/experiments`) &&
+        new URL(response.url()).pathname.endsWith(`/api/workspaces/${workspace}/experiments`) &&
         response.request().method() === "POST",
     );
     await page.getByLabel("Learner bootstrap draws").fill("20");
@@ -199,7 +199,7 @@ test.describe.serial("Scientific workbench", () => {
     await page.getByLabel("Monte Carlo repetitions").fill("30");
     const pending = page.waitForResponse(
       (response) =>
-        response.url().endsWith(`/api/workspaces/${workspace}/simulations`) &&
+        new URL(response.url()).pathname.endsWith(`/api/workspaces/${workspace}/simulations`) &&
         response.request().method() === "POST",
     );
     await page

@@ -4,7 +4,13 @@ import { api } from "../api/client";
 import { Panel, Field, ErrorState, Inspector, Notice } from "./Common";
 import { hash } from "../lib/format";
 
-export function RunComparison({ current }: { current: string }) {
+export function RunComparison({
+  current,
+  fold = 0,
+}: {
+  current: string;
+  fold?: number;
+}) {
   const [right, setRight] = useState("");
   const [leftModel, setLeftModel] = useState("bkt");
   const [rightModel, setRightModel] = useState("global");
@@ -13,12 +19,12 @@ export function RunComparison({ current }: { current: string }) {
     queryFn: api.allExperiments,
   });
   const comparing = useMutation({
-    mutationFn: () => api.compare(current, right, leftModel, rightModel),
+    mutationFn: () => api.compare(current, right, leftModel, rightModel, fold),
   });
   return (
     <Panel
       title="Compare immutable runs"
-      description="Choose another dataset or model through the API. Paired uncertainty is available only for identical held-out targets."
+      description={`Compare temporal fold ${fold + 1} in both runs. Paired uncertainty requires identical held-out targets.`}
     >
       <div className="form-grid">
         <Field label="Comparison run">

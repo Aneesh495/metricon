@@ -4,6 +4,8 @@
 
 The laptop/mobile audit found and repaired a clean-clone installation failure in hosted CI. A fresh source checkout without generated client assets now installs with `uv sync --locked`; distribution wheels still bundle the compiled client and exact dependency lock. Focused API tests and an installed-wheel check from outside the checkout passed. Responsive interaction tests are in progress. GitHub Pages cannot execute the Python service, so the complete laboratory keeps its local deployment workflow. The campaign below describes the previous accepted source; a changed source requires fresh acceptance and verification before it is accepted.
 
+The follow-up integrity regressions reproduced historical-version submissions and unchecked research payloads, then passed after remediation. Prediction diagnostics and comparison now carry the selected temporal fold. The focused result is 10 API/integrity tests, 7 client unit tests, strict typing, a client build and all 8 existing browser workflows passing. Broader Chrome/WebKit viewport and navigation checks are the next gate.
+
 The implemented laboratory passed the complete correctness campaign and independent verification on October 1, 2026. The synthetic predictive targets passed. The canonical import throughput objective remains unmet and is reported separately.
 
 ## Implemented contracts

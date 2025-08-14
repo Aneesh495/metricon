@@ -55,7 +55,7 @@ export function Experiments({
     enabled: Boolean(artifactId),
   });
   const mutation = useMutation({
-    mutationFn: () => api.experiment(workspace, options),
+    mutationFn: () => api.experiment(workspace, options, dataset),
     onSuccess: (job) => {
       onJob(job.id);
       void queryClient.invalidateQueries({ queryKey: ["jobs", workspace] });
@@ -68,7 +68,13 @@ export function Experiments({
   }
   return (
     <div className="page-stack">
-      {artifactId ? <RunComparison current={artifactId} /> : null}
+      {artifactId ? (
+        <RunComparison
+          key={`${artifactId}:${foldIndex}`}
+          current={artifactId}
+          fold={foldIndex}
+        />
+      ) : null}
       <div className="page-intro">
         <div>
           <p className="eyebrow">03 / Experiment bench</p>
@@ -305,9 +311,10 @@ export function Experiments({
               <>
                 <CalibrationView metrics={model.test} />
                 <PredictionInspector
-                  key={`${artifactId}:${modelName}`}
+                  key={`${artifactId}:${modelName}:${foldIndex}`}
                   artifact={artifactId}
                   model={modelName}
+                  fold={foldIndex}
                 />
                 <div className="two-columns">
                   <Panel
