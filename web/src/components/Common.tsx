@@ -269,11 +269,19 @@ export function Inspector({
 }) {
   const [open, setOpen] = useState(initiallyOpen);
   const [copied, setCopied] = useState(false);
+  const [copyError, setCopyError] = useState("");
   const text = JSON.stringify(value, null, 2);
   async function copy() {
-    await navigator.clipboard.writeText(text);
-    setCopied(true);
-    window.setTimeout(() => setCopied(false), 2000);
+    setCopyError("");
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 2000);
+    } catch {
+      setCopyError(
+        "Clipboard access is unavailable. Use Download JSON to save this artifact.",
+      );
+    }
   }
   return (
     <div className="inspector">
@@ -302,6 +310,11 @@ export function Inspector({
           </button>
         </div>
       </div>
+      {copyError ? (
+        <p role="status" className="footnote">
+          {copyError}
+        </p>
+      ) : null}
       {open ? <pre>{text}</pre> : null}
     </div>
   );

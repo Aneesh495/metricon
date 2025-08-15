@@ -153,8 +153,11 @@ export function ModelMicroscope({
     queryFn: () => api.artifacts(dataset, "experiment"),
   });
   const [selected, setSelected] = useState("");
-  const artifact =
-    selected || requestedArtifact || artifacts.data?.[0]?.id || "";
+  const [fold, setFold] = useState(0);
+  const requested = artifacts.data?.some((row) => row.id === requestedArtifact)
+    ? requestedArtifact
+    : "";
+  const artifact = selected || requested || artifacts.data?.[0]?.id || "";
   const [name, setName] = useState("bkt");
   const [skill, setSkill] = useState("");
   const report = useQuery({
@@ -162,16 +165,20 @@ export function ModelMicroscope({
     queryFn: () => api.report(artifact),
     enabled: Boolean(artifact),
   });
+  const names = Object.entries(report.data?.folds[fold]?.models ?? {})
+    .filter(([, result]) => result.eligible)
+    .map(([key]) => key);
+  const modelName = names.includes(name) ? name : (names[0] ?? "");
   const model = useQuery({
-    queryKey: ["model", artifact, name],
-    queryFn: () => api.model(artifact, name),
-    enabled: Boolean(artifact),
+    queryKey: ["model", artifact, modelName, fold],
+    queryFn: () => api.model(artifact, modelName, fold),
+    enabled: Boolean(artifact && modelName),
   });
   const skillParameters = z
     .record(BKTParameterSchema)
     .safeParse(model.data?.skills);
   const selectedSkill =
-    skill ||
+    (skillParameters.success && skill in skillParameters.data ? skill : "") ||
     (skillParameters.success ? Object.keys(skillParameters.data)[0] : "");
   const parameter = skillParameters.success
     ? skillParameters.data[selectedSkill]
@@ -200,6 +207,7 @@ export function ModelMicroscope({
               value={artifact}
               onChange={(event) => {
                 setSelected(event.target.value);
+                setFold(0);
                 setSkill("");
               }}
             >
@@ -211,19 +219,32 @@ export function ModelMicroscope({
               ))}
             </select>
           </Field>
+          <Field label="Model temporal fold">
+            <select
+              value={fold}
+              onChange={(event) => {
+                setFold(Number(event.target.value));
+                setSkill("");
+              }}
+            >
+              {report.data?.folds.map((_, index) => (
+                <option key={index} value={index}>
+                  Fold {index + 1}
+                </option>
+              ))}
+            </select>
+          </Field>
           <Field label="Fitted model">
             <select
-              value={name}
+              value={modelName}
               onChange={(event) => {
                 setName(event.target.value);
                 setSkill("");
               }}
             >
-              {Object.entries(report.data?.folds[0]?.models ?? {})
-                .filter(([, result]) => result.eligible)
-                .map(([key]) => (
-                  <option key={key}>{key}</option>
-                ))}
+              {names.map((key) => (
+                <option key={key}>{key}</option>
+              ))}
             </select>
           </Field>
         </div>
@@ -233,6 +254,12 @@ export function ModelMicroscope({
           Run the packaged experiment pipeline, then inspect its parameters
           here.
         </Empty>
+      ) : report.error ? (
+        <ErrorState error={report.error} />
+      ) : report.isPending ? (
+        <Loading />
+      ) : !modelName ? (
+        <Notice>No eligible fitted model is available in this fold.</Notice>
       ) : model.isPending ? (
         <Loading />
       ) : model.error ? (
@@ -280,7 +307,7 @@ export function ModelMicroscope({
               </Panel>
               {parameter ? (
                 <BKTExplorer
-                  key={`${artifact}:${name}:${selectedSkill}`}
+                  key={`${artifact}:${modelName}:${fold}:${selectedSkill}`}
                   parameters={parameter}
                 />
               ) : null}
@@ -350,8 +377,10 @@ export function ModelMicroscope({
           {model.data.family === "bkt" ? (
             <KnowledgeReplay
               artifact={artifact}
-              model={name}
+              key={`${artifact}:${modelName}:${fold}`}
+              model={modelName}
               dataset={dataset}
+              fold={fold}
             />
           ) : null}
           <Inspector value={model.data.diagnostics} title="Model diagnostics" />

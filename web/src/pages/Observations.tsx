@@ -106,6 +106,10 @@ export function Observations({
             }}
           >
             <option value="">Whole dataset</option>
+            {learner &&
+            !learners.data?.rows.some((row) => row.id === learner) ? (
+              <option value={learner}>{learner}</option>
+            ) : null}
             {learners.data?.rows.map((row) => (
               <option key={row.id}>{row.id}</option>
             ))}

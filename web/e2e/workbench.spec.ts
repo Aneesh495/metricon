@@ -5,6 +5,7 @@ let page: Page;
 let workspace = "";
 let dataset = "";
 let run = "";
+let profile = "";
 const errors: string[] = [];
 const headers = { "X-Metricon-Client": "1" };
 const evidence = ".metricon/verification/browser";
@@ -30,9 +31,15 @@ async function waitTask(id: string) {
 }
 
 test.describe.serial("Scientific workbench", () => {
-  test.beforeAll(async ({ browser }) => {
+  test.beforeAll(async ({ browser }, testInfo) => {
     mkdirSync(evidence, { recursive: true });
-    page = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
+    profile = testInfo.project.name;
+    page = await browser.newPage({
+      viewport: testInfo.project.use.viewport,
+      isMobile: testInfo.project.use.isMobile,
+      hasTouch: testInfo.project.use.hasTouch,
+      userAgent: testInfo.project.use.userAgent,
+    });
     page.on("pageerror", (error) => errors.push(error.message));
     page.on("response", (response) => {
       if (response.status() >= 500)
@@ -109,7 +116,7 @@ test.describe.serial("Scientific workbench", () => {
     await navigate("Observations");
     await expect(page.getByText("24 attempts", { exact: false })).toBeVisible();
     await page.screenshot({
-      path: `${evidence}/import-quality.png`,
+      path: `${evidence}/${profile}-import-quality.png`,
       fullPage: true,
     });
   });
@@ -133,8 +140,9 @@ test.describe.serial("Scientific workbench", () => {
     await navigate("Experiment bench");
     const training = page.waitForResponse(
       (response) =>
-        new URL(response.url()).pathname.endsWith(`/api/workspaces/${workspace}/experiments`) &&
-        response.request().method() === "POST",
+        new URL(response.url()).pathname.endsWith(
+          `/api/workspaces/${workspace}/experiments`,
+        ) && response.request().method() === "POST",
     );
     await page.getByLabel("Learner bootstrap draws").fill("20");
     await page
@@ -147,7 +155,7 @@ test.describe.serial("Scientific workbench", () => {
     await navigate("Experiment bench");
     await expect(page.getByText("bkt", { exact: true }).first()).toBeVisible();
     await page.screenshot({
-      path: `${evidence}/experiment.png`,
+      path: `${evidence}/${profile}-experiment.png`,
       fullPage: true,
     });
   });
@@ -176,7 +184,10 @@ test.describe.serial("Scientific workbench", () => {
     await expect(
       page.getByText("Per-skill BKT parameters", { exact: true }),
     ).toBeVisible();
-    await page.screenshot({ path: `${evidence}/model.png`, fullPage: true });
+    await page.screenshot({
+      path: `${evidence}/${profile}-model.png`,
+      fullPage: true,
+    });
     const response = await page.request.get(
       `/api/artifacts/${run}/models/bkt/replay?learner_id=demo-000&offset=0`,
     );
@@ -186,7 +197,9 @@ test.describe.serial("Scientific workbench", () => {
 
   test("planner and misspecified simulation disclose assumptions", async () => {
     await navigate("Observations");
-    await page.getByRole("combobox", { name: "Learner", exact: true }).selectOption("demo-000");
+    await page
+      .getByRole("combobox", { name: "Learner", exact: true })
+      .selectOption("demo-000");
     await navigate("Policy laboratory");
     await page
       .getByRole("button", { name: /Build|Plan|Rank/ })
@@ -199,8 +212,9 @@ test.describe.serial("Scientific workbench", () => {
     await page.getByLabel("Monte Carlo repetitions").fill("30");
     const pending = page.waitForResponse(
       (response) =>
-        new URL(response.url()).pathname.endsWith(`/api/workspaces/${workspace}/simulations`) &&
-        response.request().method() === "POST",
+        new URL(response.url()).pathname.endsWith(
+          `/api/workspaces/${workspace}/simulations`,
+        ) && response.request().method() === "POST",
     );
     await page
       .getByRole("button", { name: "Compare policies", exact: true })
@@ -268,7 +282,10 @@ test.describe.serial("Scientific workbench", () => {
     const lineage = await page.request.get(`/api/lineage/${run}/verify`);
     expect((await lineage.json()).valid).toBe(true);
     await page.setViewportSize({ width: 390, height: 844 });
-    await page.screenshot({ path: `${evidence}/mobile.png`, fullPage: true });
+    await page.screenshot({
+      path: `${evidence}/${profile}-mobile.png`,
+      fullPage: true,
+    });
     expect(
       await page.evaluate(
         () => document.documentElement.scrollWidth <= window.innerWidth + 2,

@@ -36,17 +36,35 @@ async function request<T>(
   schema: z.ZodType<T>,
   options: RequestInit = {},
 ): Promise<T> {
-  const response = await fetch(`/api${path}`, {
-    ...options,
-    headers: {
-      "X-Metricon-Client": "1",
-      ...(options.body instanceof FormData
-        ? {}
-        : { "Content-Type": "application/json" }),
-      ...options.headers,
-    },
-  });
-  const payload: unknown = await response.json();
+  let response: Response;
+  try {
+    response = await fetch(`/api${path}`, {
+      ...options,
+      headers: {
+        "X-Metricon-Client": "1",
+        ...(options.body instanceof FormData
+          ? {}
+          : { "Content-Type": "application/json" }),
+        ...options.headers,
+      },
+    });
+  } catch (error) {
+    throw new ApiError(
+      0,
+      "Cannot reach the local laboratory. Start metricon serve and retry.",
+      error,
+    );
+  }
+  let payload: unknown;
+  try {
+    payload = await response.json();
+  } catch {
+    throw new ApiError(
+      response.ok ? 502 : response.status,
+      "The API returned a non-JSON response. Check the local service and reload the workbench.",
+      null,
+    );
+  }
   if (!response.ok) {
     const detail = z.object({ detail: z.unknown() }).safeParse(payload);
     const message =
@@ -252,9 +270,15 @@ export const api = {
     request(`/lineage/${id}/verify`, z.record(z.unknown())),
   descendants: (id: string) =>
     request(`/lineage/${id}/descendants`, z.record(z.unknown())),
-  replay: (id: string, name: string, learner: string, offset: number) =>
+  replay: (
+    id: string,
+    name: string,
+    learner: string,
+    offset: number,
+    fold = 0,
+  ) =>
     request(
-      `/artifacts/${id}/models/${encodeURIComponent(name)}/replay${parameters({ learner_id: learner, offset })}`,
+      `/artifacts/${id}/models/${encodeURIComponent(name)}/replay${parameters({ learner_id: learner, offset, fold })}`,
       z.record(z.unknown()),
     ),
   predictions: (

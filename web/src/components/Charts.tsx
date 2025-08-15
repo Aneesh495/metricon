@@ -1,6 +1,7 @@
 import { useState } from "react";
 import type { Metrics, Trend } from "../api/contracts";
 import { number, percentage } from "../lib/format";
+import { timelinePositions } from "../lib/chart-geometry";
 
 const WIDTH = 760;
 const HEIGHT = 280;
@@ -29,8 +30,9 @@ function Grid() {
 
 export function TrendChart({ trend }: { trend: Trend }) {
   const [hovered, setHovered] = useState<number | null>(null);
-  const x = (index: number) =>
-    LEFT + ((index + 0.5) / Math.max(trend.series.length, 1)) * plotWidth;
+  const [chosen, setChosen] = useState<number | null>(null);
+  const positions = timelinePositions(trend.series, trend.axis);
+  const x = (index: number) => LEFT + positions[index] * plotWidth;
   const valid = trend.series.filter(
     (point) => point.accuracy.estimate !== null,
   );
@@ -57,9 +59,28 @@ export function TrendChart({ trend }: { trend: Trend }) {
         `${x(trend.series.length - 1 - index)},${y(point.accuracy.lower ?? 0)}`,
     )
     .join(" ");
-  const selected = hovered === null ? null : trend.series[hovered];
+  const selectedIndex = hovered ?? chosen;
+  const selected = selectedIndex === null ? null : trend.series[selectedIndex];
   return (
     <div className="chart">
+      <label className="field">
+        <span>Inspect timeline bin</span>
+        <select
+          value={chosen ?? ""}
+          onChange={(event) =>
+            setChosen(
+              event.target.value === "" ? null : Number(event.target.value),
+            )
+          }
+        >
+          <option value="">Choose a supported bin</option>
+          {trend.series.map((point, index) => (
+            <option key={point.bucket} value={index}>
+              Bin {point.bucket} / n={point.accuracy.n}
+            </option>
+          ))}
+        </select>
+      </label>
       <svg
         viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
         role="img"
@@ -91,6 +112,7 @@ export function TrendChart({ trend }: { trend: Trend }) {
               height={plotHeight}
               fill="transparent"
               onMouseEnter={() => setHovered(index)}
+              onPointerDown={() => setChosen(index)}
             />
           </g>
         ))}
@@ -118,7 +140,8 @@ export function TrendChart({ trend }: { trend: Trend }) {
         ) : (
           <>
             Line: observed accuracy. Band: 95% Wilson interval. Faint ranges
-            preserve answer extrema. Hover to inspect denominators.
+            preserve answer extrema. Hover, tap or select a bin to inspect
+            denominators.
           </>
         )}
       </div>
@@ -183,6 +206,42 @@ export function CalibrationChart({ metrics }: { metrics: Metrics }) {
         {metrics.calibration.method}. Whiskers show Wilson intervals. Empty bins
         are unknown. Circle sizes reflect observations.
       </p>
+      <details className="chart-data">
+        <summary>Show calibration data table</summary>
+        <div
+          className="table-scroll"
+          tabIndex={0}
+          aria-label="Calibration data table"
+        >
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">Probability bin</th>
+                <th scope="col">Observations</th>
+                <th scope="col">Predicted</th>
+                <th scope="col">Observed</th>
+                <th scope="col">95% Wilson interval</th>
+              </tr>
+            </thead>
+            <tbody>
+              {metrics.calibration.bins.map((bin) => (
+                <tr key={bin.bin}>
+                  <td>
+                    {number(bin.left, 2)} to {number(bin.right, 2)}
+                  </td>
+                  <td>{number(bin.n)}</td>
+                  <td>{percentage(bin.prediction)}</td>
+                  <td>{percentage(bin.observed.estimate)}</td>
+                  <td>
+                    {percentage(bin.observed.lower)} to{" "}
+                    {percentage(bin.observed.upper)}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </details>
     </div>
   );
 }

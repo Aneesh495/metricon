@@ -61,10 +61,12 @@ export function KnowledgeReplay({
   artifact,
   model,
   dataset,
+  fold = 0,
 }: {
   artifact: string;
   model: string;
   dataset: string;
+  fold?: number;
 }) {
   const learners = useQuery({
     queryKey: ["learners", dataset],
@@ -74,15 +76,15 @@ export function KnowledgeReplay({
   const [offset, setOffset] = useState(0);
   const learner = selected || learners.data?.rows[0]?.id || "";
   const query = useQuery({
-    queryKey: ["replay", artifact, model, learner, offset],
-    queryFn: () => api.replay(artifact, model, learner, offset),
+    queryKey: ["replay", artifact, model, fold, learner, offset],
+    queryFn: () => api.replay(artifact, model, learner, offset, fold),
     enabled: Boolean(learner),
   });
   const parsed = ReplaySchema.safeParse(query.data);
   return (
     <Panel
       title="Replay an observed learner history"
-      description="Retrospective state reconstruction from initial knowledge using exact fitted parameters."
+      description={`Retrospective state reconstruction with exact fitted parameters from temporal fold ${fold + 1}.`}
       action={
         <Field label="Learner">
           <select

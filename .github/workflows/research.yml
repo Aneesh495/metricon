@@ -17,7 +17,7 @@ jobs:
           node-version: '24'
       - run: uv sync --locked --python 3.13
       - run: npm ci
-      - run: npx playwright install --with-deps chromium
+      - run: npx playwright install --with-deps chromium webkit
       - run: make bootstrap
       - run: make acceptance
       - run: make verify

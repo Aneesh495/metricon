@@ -30,4 +30,22 @@ Navigation, forms, notices and table alternatives remain usable at the verified 
 
 ![Readable synthetic observation filters at the mobile viewport](screenshots/mobile-viewport.png)
 
+The [responsive workflow](../web/e2e/responsive.spec.ts) checks 320 through 1440 pixel widths under laptop Chromium, touch Chromium and mobile WebKit. These are browser emulations, not measurements on physical phones. Coarse-pointer controls retain usable touch targets and 16 pixel input text; reduced-motion preferences disable spinner animation. Timeline bins can be inspected by native selection, and calibration data has an expandable table.
+
+![Synthetic observations rendered by mobile WebKit](screenshots/mobile-webkit.png)
+
+The URL retains workspace, immutable dataset version, learner, artifact and section. Reload/back navigation restores these selections. A missing workspace or a version owned by another workspace produces an explicit state before any analytical scan. Switching versions clears prepared export links and model/page state. Experiment submissions pin the selected version; choosing a temporal fold changes saved prediction, calibration, comparison and replay requests together.
+
+```mermaid
+flowchart LR
+  LINK[URL and browser history] --> SELECT[Workspace version learner artifact and section]
+  SELECT --> OWNER[Validate workspace and committed version]
+  OWNER --> QUERY[Scoped API requests and query identities]
+  QUERY --> PAGE[Observations and saved run views]
+  DATA[Version change] --> RESET[Reset page state and prepared exports]
+  RESET --> QUERY
+```
+
+Offline/API failures expose retry, clipboard denial exposes download, and an unavailable interface module exposes reload. These recoveries do not publish new observations or research artifacts.
+
 The [API reference](API_CLI.md), [metric glossary](METRICS.md) and [task runbook](TASKS.md) define the exact contracts behind these screens. Browser failures, screenshots and Playwright results remain in local `.metricon/verification/browser/` evidence after reproduction.

@@ -15,7 +15,25 @@ import {
 import { hash, number, parseObject, percentage } from "../lib/format";
 import type { Action } from "../api/contracts";
 
-function ActionList({ actions, timed }: { actions: Action[]; timed: boolean }) {
+function ActionList({
+  actions,
+  timed,
+  workspace,
+  dataset,
+}: {
+  actions: Action[];
+  timed: boolean;
+  workspace: string;
+  dataset: string;
+}) {
+  function artifactLink(artifact: string) {
+    const query = new URLSearchParams(window.location.search);
+    query.set("workspace", workspace);
+    query.set("version", dataset);
+    query.set("tab", "provenance");
+    query.set("artifact", artifact);
+    return `?${query.toString()}`;
+  }
   return (
     <div className="action-list">
       {actions.map((action, index) => (
@@ -42,7 +60,7 @@ function ActionList({ actions, timed }: { actions: Action[]; timed: boolean }) {
               ))}
             </div>
             {action.model_artifact_id ? (
-              <a href={`?tab=provenance&artifact=${action.model_artifact_id}`}>
+              <a href={artifactLink(action.model_artifact_id)}>
                 Inspect fitted run {hash(action.model_artifact_id)}
               </a>
             ) : null}
@@ -227,7 +245,12 @@ export function PolicyLab({
               />
             </div>
             {planner.data.actions.length ? (
-              <ActionList actions={planner.data.actions} timed />
+              <ActionList
+                actions={planner.data.actions}
+                timed
+                workspace={workspace}
+                dataset={dataset}
+              />
             ) : (
               <Empty title="No supported timed actions">
                 Inspect untimed suggestions below or import reliable item-level
@@ -240,6 +263,8 @@ export function PolicyLab({
                 <ActionList
                   actions={planner.data.unknown_time_actions.slice(0, 15)}
                   timed={false}
+                  workspace={workspace}
+                  dataset={dataset}
                 />
               </>
             ) : null}

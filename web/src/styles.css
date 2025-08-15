@@ -160,6 +160,10 @@ pre {
   flex-direction: column;
   padding: 30px 20px;
   z-index: 10;
+  overflow-y: auto;
+}
+.sidebar nav {
+  flex-shrink: 0;
 }
 .brand {
   display: flex;
@@ -302,6 +306,12 @@ nav {
   display: flex;
   gap: 10px;
   align-items: center;
+  min-width: 0;
+  max-width: 100%;
+  flex-wrap: wrap;
+}
+.topbar span {
+  overflow-wrap: anywhere;
 }
 .topbar select {
   font:
@@ -363,6 +373,27 @@ nav {
   justify-content: space-between;
   align-items: flex-start;
   margin-bottom: 23px;
+}
+.panel-header > div {
+  min-width: 0;
+}
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px;
+}
+.toolbar > .field {
+  flex: 1;
+}
+.chart-data {
+  margin-top: 14px;
+  color: var(--muted);
+  font-size: 12px;
+}
+.chart-data summary {
+  cursor: pointer;
+  padding: 10px 0;
 }
 .panel-header .eyebrow {
   margin-bottom: 7px;
@@ -1351,4 +1382,27 @@ pre {
 }
 .replay-update span {
   color: #91abba;
+}
+@media (pointer: coarse) {
+  button,
+  .button-link {
+    min-height: 44px;
+  }
+  input:not([type="checkbox"]),
+  select,
+  textarea {
+    font-size: 16px;
+    min-height: 44px;
+  }
+  .chart-data summary {
+    min-height: 44px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .spin {
+    animation: none;
+  }
+  button {
+    transition: none;
+  }
 }

@@ -72,25 +72,31 @@ export default function App() {
     setWorkspace,
     tab,
     setTab,
+    version,
+    setVersion,
+    learner,
+    setLearner,
+    artifact,
+    setArtifact,
   } = useSelection();
-  const [version, setVersion] = useState("");
-  const [learner, setLearner] = useState("");
-  const [artifact, setArtifact] = useState("");
   const [creating, setCreating] = useState(false);
   const [name, setName] = useState("My learning workspace");
   const workspaces = useQuery({
     queryKey: ["workspaces"],
     queryFn: api.workspaces,
   });
-  const workspace =
-    workspaces.data?.find((row) => row.id === selectedWorkspace) ??
-    workspaces.data?.[0];
+  const workspace = selectedWorkspace
+    ? workspaces.data?.find((row) => row.id === selectedWorkspace)
+    : workspaces.data?.[0];
   const versions = useQuery({
     queryKey: ["versions", workspace?.id],
     queryFn: () => api.versions(workspace!.id),
     enabled: Boolean(workspace),
   });
-  const dataset = version || workspace?.dataset_id || "";
+  const selectedVersion = versions.data?.find((row) => row.id === version);
+  const dataset = version
+    ? selectedVersion?.id || ""
+    : workspace?.dataset_id || "";
   const jobs = useJobs(workspace?.id);
   const activeJobs =
     jobs.data?.filter((job) => ["queued", "running"].includes(job.status))
@@ -124,6 +130,13 @@ export default function App() {
     setTab("jobs");
   }
   function renderPage() {
+    if (selectedWorkspace && !workspace)
+      return (
+        <Empty title="This workspace is unavailable">
+          Select an existing workspace or create a new one. The requested link
+          does not select another workspace's data.
+        </Empty>
+      );
     if (!workspace)
       return (
         <Empty
@@ -153,6 +166,35 @@ export default function App() {
       return <ImportLab workspace={workspace.id} onJob={jobQueued} />;
     if (tab === "jobs")
       return <Jobs workspace={workspace.id} onArtifact={inspectArtifact} />;
+    if (versions.error)
+      return (
+        <ErrorState
+          error={versions.error}
+          retry={() => void versions.refetch()}
+        />
+      );
+    if (version && versions.isPending)
+      return <Loading label="Checking the requested dataset version" />;
+    if (version && !selectedVersion)
+      return (
+        <Empty
+          title="This dataset version is unavailable in the selected workspace"
+          action={
+            <button
+              onClick={() => {
+                setVersion("");
+                setLearner("");
+                setArtifact("");
+              }}
+            >
+              Open the latest committed version
+            </button>
+          }
+        >
+          Select a version owned by this workspace. A deep link cannot combine
+          one workspace's label with another workspace's observations.
+        </Empty>
+      );
     if (!dataset)
       return (
         <Empty
@@ -189,7 +231,13 @@ export default function App() {
         />
       );
     if (tab === "provenance")
-      return <Provenance dataset={dataset} requestedArtifact={artifact} />;
+      return (
+        <Provenance
+          key={`${dataset}:${artifact}`}
+          dataset={dataset}
+          requestedArtifact={artifact}
+        />
+      );
     return (
       <Observations
         dataset={dataset}
@@ -317,6 +365,7 @@ export default function App() {
             <Loading label="Connecting to the local laboratory" />
           ) : (
             <Suspense
+              key={`${workspace?.id}:${dataset}`}
               fallback={<Loading label="Opening analytical workbench" />}
             >
               {renderPage()}
@@ -365,7 +414,8 @@ export default function App() {
                 maxLength={120}
                 onChange={(event) => setName(event.target.value)}
                 onKeyDown={(event) => {
-                  if (event.key === "Enter" && name.trim()) create.mutate();
+                  if (event.key === "Enter" && name.trim() && !create.isPending)
+                    create.mutate();
                   if (event.key === "Escape") setCreating(false);
                 }}
               />
