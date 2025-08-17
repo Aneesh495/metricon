@@ -8,6 +8,8 @@ The follow-up integrity regressions reproduced historical-version submissions an
 
 The maintenance checks passed 92 Python tests, 10 client unit tests, strict typing, a production client build and 63 browser cases across laptop Chromium, touch Chromium and mobile WebKit. Each browser profile checks all seven sections at 320, 360, 390, 768, 1280 and 1440 pixels, then exercises real fitting, rolling folds, cancellation, rejection inspection, exports and navigation. The previous acceptance remains historical until the complete campaign is reproduced on the final frozen source.
 
+The final selection review also repaired stale comparison output and constrained comparisons to eligible saved model families. Nine focused cases across all three browser profiles passed comparison, calibration-table and interrupted-module reload checks. Next action: freeze source and reproduce the complete acceptance campaign, including the expanded browser suite.
+
 The implemented laboratory passed the complete correctness campaign and independent verification on October 1, 2026. The synthetic predictive targets passed. The canonical import throughput objective remains unmet and is reported separately.
 
 ## Implemented contracts

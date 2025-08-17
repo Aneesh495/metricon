@@ -221,6 +221,29 @@ test("the model microscope supports runs without BKT", async ({ page }) => {
     }),
   ).toBeVisible();
   expect(failures).toEqual([]);
+  await navigate(page, "Experiment bench");
+  await page.getByLabel("Choose experiment").selectOption(globalRun);
+  await page.getByLabel("Comparison run").selectOption(globalRun);
+  await expect(
+    page.getByRole("combobox", { name: "Current run model", exact: true }),
+  ).toHaveValue("global");
+  await page
+    .getByRole("button", { name: "Compare saved predictions", exact: true })
+    .click();
+  const result = page.getByRole("button", {
+    name: "Observed comparison, metrics, calibration and paired uncertainty",
+    exact: true,
+  });
+  await expect(result).toBeVisible();
+  await page.getByLabel("Comparison run").selectOption(run);
+  await expect(result).toHaveCount(0);
+  await page
+    .getByText("Show calibration data table", { exact: true })
+    .first()
+    .click();
+  await expect(
+    page.getByLabel("Calibration data table").first().locator("tbody tr"),
+  ).toHaveCount(10);
 });
 
 test("missing workspaces and foreign dataset links cannot mislabel observations", async ({
@@ -295,6 +318,25 @@ test("network and clipboard failures show recoverable controls", async ({
     .click();
   expect((await download).suggestedFilename()).toBe("metricon-artifact.json");
   expect(errors).toEqual([]);
+});
+
+test("an unavailable interface module recovers through reload", async ({
+  page,
+}) => {
+  await page.route("**/assets/Jobs-*.js", (route) => route.abort());
+  await page.goto(`/?workspace=${workspace}&version=${dataset}`);
+  await navigate(page, "Jobs");
+  await expect(
+    page.getByRole("heading", { name: "The workbench could not open." }),
+  ).toBeVisible();
+  await page.unroute("**/assets/Jobs-*.js");
+  await page
+    .getByRole("button", { name: "Reload workbench", exact: true })
+    .click();
+  await expect(
+    page.getByRole("heading", { name: "Observe the work in flight." }),
+  ).toBeVisible();
+  await expect(page.getByLabel("Dataset version")).toHaveValue(dataset);
 });
 
 test("deep links reload and browser history preserve the dataset and learner", async ({
