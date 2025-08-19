@@ -46,6 +46,6 @@ flowchart LR
   RESET --> QUERY
 ```
 
-Offline/API failures expose retry, clipboard denial exposes download, and an unavailable interface module exposes reload. These recoveries do not publish new observations or research artifacts.
+Offline/API failures expose retry, clipboard denial exposes download, and an unavailable interface module exposes reload. After an explicit reload, the [module loader](../web/src/lib/load-page.ts) can retry a failed import through the current compiled manifest and a fresh URL. The [client recovery ADR](adrs/0005-local-client-recovery.md) records the observed WebKit failure and packaging/cache contract. These recoveries do not publish new observations or research artifacts.
 
 The [API reference](API_CLI.md), [metric glossary](METRICS.md) and [task runbook](TASKS.md) define the exact contracts behind these screens. Browser failures, screenshots and Playwright results remain in local `.metricon/verification/browser/` evidence after reproduction.

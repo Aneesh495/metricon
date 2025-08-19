@@ -24,35 +24,48 @@ import {
 } from "./components/Common";
 import { useJobs, useSelection } from "./hooks/useLab";
 import { hash, number } from "./lib/format";
+import { loadPage } from "./lib/load-page";
 
 const Observations = lazy(() =>
-  import("./pages/Observations").then((module) => ({
-    default: module.Observations,
-  })),
+  loadPage("Observations", () => import("./pages/Observations")).then(
+    (module) => ({
+      default: module.Observations,
+    }),
+  ),
 );
 const ImportLab = lazy(() =>
-  import("./pages/ImportLab").then((module) => ({ default: module.ImportLab })),
+  loadPage("ImportLab", () => import("./pages/ImportLab")).then((module) => ({
+    default: module.ImportLab,
+  })),
 );
 const Experiments = lazy(() =>
-  import("./pages/Experiments").then((module) => ({
-    default: module.Experiments,
-  })),
+  loadPage("Experiments", () => import("./pages/Experiments")).then(
+    (module) => ({
+      default: module.Experiments,
+    }),
+  ),
 );
 const ModelMicroscope = lazy(() =>
-  import("./pages/ModelMicroscope").then((module) => ({
-    default: module.ModelMicroscope,
-  })),
+  loadPage("ModelMicroscope", () => import("./pages/ModelMicroscope")).then(
+    (module) => ({
+      default: module.ModelMicroscope,
+    }),
+  ),
 );
 const PolicyLab = lazy(() =>
-  import("./pages/PolicyLab").then((module) => ({ default: module.PolicyLab })),
+  loadPage("PolicyLab", () => import("./pages/PolicyLab")).then((module) => ({
+    default: module.PolicyLab,
+  })),
 );
 const Provenance = lazy(() =>
-  import("./pages/Provenance").then((module) => ({
+  loadPage("Provenance", () => import("./pages/Provenance")).then((module) => ({
     default: module.Provenance,
   })),
 );
 const Jobs = lazy(() =>
-  import("./pages/Jobs").then((module) => ({ default: module.Jobs })),
+  loadPage("Jobs", () => import("./pages/Jobs")).then((module) => ({
+    default: module.Jobs,
+  })),
 );
 
 const navigation = [

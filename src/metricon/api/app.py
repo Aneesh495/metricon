@@ -102,7 +102,10 @@ def create_app(settings: Settings | None = None, start_jobs: bool = True) -> Fas
             return JSONResponse(
                 {"detail": "Local writes require X-Metricon-Client: 1"}, status_code=403
             )
-        return await call_next(request)
+        response = await call_next(request)
+        if not request.url.path.startswith("/api/"):
+            response.headers["Cache-Control"] = "no-store"
+        return response
 
     @app.exception_handler(KeyError)
     async def missing(request: Request, error: KeyError):

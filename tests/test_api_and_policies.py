@@ -10,6 +10,21 @@ from metricon.simulation.engine import SimulationConfig, simulate
 HEADERS = {"X-Metricon-Client": "1"}
 
 
+def test_local_client_assets_are_not_cached_between_builds(tmp_path):
+    web = tmp_path / "web"
+    (web / "assets").mkdir(parents=True)
+    (web / "index.html").write_text("<h1>Test workbench</h1>")
+    (web / "assets/page.js").write_text("export const page = true;")
+    (web / "manifest.json").write_text('{"page":{"file":"assets/page.js"}}')
+    app = create_app(Settings(tmp_path / "store", web_directory=web), start_jobs=False)
+    with TestClient(app) as client:
+        for url in ["/", "/assets/page.js", "/manifest.json"]:
+            response = client.get(url)
+            assert response.status_code == 200
+            assert response.headers["cache-control"] == "no-store"
+        assert client.get("/api/health").status_code == 200
+
+
 def test_installed_package_serves_bundled_workbench(tmp_path, monkeypatch):
     import metricon.api.app as module
     package = tmp_path / "installed" / "metricon"

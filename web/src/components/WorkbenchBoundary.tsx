@@ -19,7 +19,13 @@ export class WorkbenchBoundary extends Component<
           A browser update or interrupted connection may have left an
           unavailable interface module. Reload to request the current workbench.
         </p>
-        <button onClick={() => window.location.reload()}>
+        <button
+          onClick={() => {
+            const url = new URL(window.location.href);
+            url.searchParams.set("_workbench_reload", Date.now().toString(36));
+            window.location.replace(url.href);
+          }}
+        >
           Reload workbench
         </button>
       </main>
