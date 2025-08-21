@@ -70,7 +70,11 @@ def execute(root: Path, request_path: Path) -> None:
             result_id = Analytics(catalog, job["dataset_id"]).materialize(parameters)
             message = "Analytical outputs complete"
         else:
-            result = simulate(SimulationConfig(**parameters))
+            result = simulate(
+                SimulationConfig(**parameters),
+                progress=lambda value, message: progress(0.9 * value, message),
+                cancelled=cancelled,
+            )
             progress(0.9, "Simulation trajectories complete")
             with ArtifactWriter(catalog, "simulation", job["dataset_id"]) as writer:
                 atomic_json(writer.path / "simulation.json", result)

@@ -16,7 +16,7 @@ stateDiagram-v2
   failed --> [*]
 ```
 
-A task has a default one-hour wall-time budget. Cancellation creates a control file checked between chunks and fits. After five seconds without exit, the coordinator terminates the task process group. Reported progress records completed chunks and model work, never timer-based animation. Logs, requests, and complete worker responses remain under the ignored `task-runtime` directory.
+A task has a default one-hour wall-time budget. Cancellation creates a control file checked between chunks and fits. Simulation checks it before each seed allocation and each action, including long trials. After five seconds without exit, the coordinator terminates the task process group. Simulation progress counts completed policy trials against repetitions times policies; each trial includes its configured budget. It occupies the first 90 percent of task progress, leaving output writing and coordinator publication separate. Reported progress records completed work, never timer-based animation. Logs, requests, and complete worker responses remain under the ignored `task-runtime` directory.
 
 Workers monitor the owning parent. Parent death terminates orphan workers, leaving staging files for reconciliation. On restart, run `metricon reconcile` before starting the service. It holds exclusive coordinator and operations locks, removes unregistered directories, and preserves committed datasets and artifacts. Running tasks become failed with an interruption message and require explicit resubmission. Queued tasks remain queued.
 

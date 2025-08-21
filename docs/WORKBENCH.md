@@ -30,7 +30,7 @@ Navigation, forms, notices and table alternatives remain usable at the verified 
 
 ![Readable synthetic observation filters at the mobile viewport](screenshots/mobile-viewport.png)
 
-The [responsive workflow](../web/e2e/responsive.spec.ts) checks 320 through 1440 pixel widths under laptop Chromium, touch Chromium and mobile WebKit. These are browser emulations, not measurements on physical phones. Coarse-pointer controls retain usable touch targets and 16 pixel input text; reduced-motion preferences disable spinner animation. Timeline bins can be inspected by native selection, and calibration data has an expandable table.
+The [responsive workflow](../web/e2e/responsive.spec.ts) checks 320 through 1440 pixel widths under laptop Chromium, touch Chromium and mobile WebKit. These are browser emulations, not measurements on physical phones. Coarse-pointer controls retain usable touch targets and 16 pixel input text; reduced-motion preferences disable spinner animation. Long select labels use ellipsis inside the control while native dropdowns retain their full options. Timeline bins can be inspected by native selection, and calibration data has an expandable table.
 
 ![Synthetic observations rendered by mobile WebKit](screenshots/mobile-webkit.png)
 

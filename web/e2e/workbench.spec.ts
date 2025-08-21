@@ -153,7 +153,9 @@ test.describe.serial("Scientific workbench", () => {
     run = (await (await page.request.get(`/api/jobs/${job.id}`)).json())
       .result_id;
     await navigate("Experiment bench");
-    await expect(page.getByText("bkt", { exact: true }).first()).toBeVisible();
+    await expect(
+      page.getByRole("cell", { name: "bkt", exact: true }),
+    ).toBeVisible();
     await page.screenshot({
       path: `${evidence}/${profile}-experiment.png`,
       fullPage: true,
@@ -241,10 +243,27 @@ test.describe.serial("Scientific workbench", () => {
     );
     expect(response.status()).toBe(202);
     const job = await response.json();
+    await expect
+      .poll(
+        async () => {
+          const response = await page.request.get(`/api/jobs/${job.id}`);
+          return (await response.json()).status;
+        },
+        { timeout: 15000 },
+      )
+      .toBe("running");
+    await expect(
+      page
+        .getByRole("navigation", { name: "Workbench navigation" })
+        .getByRole("button", { name: "Jobs", exact: true }),
+    ).toHaveAccessibleDescription(/^[1-9][0-9]* active jobs?$/, {
+      timeout: 15000,
+    });
     await navigate("Jobs");
     await page
+      .getByRole("article")
+      .filter({ has: page.getByText(job.id.slice(0, 12), { exact: true }) })
       .getByRole("button", { name: "Cancel job", exact: true })
-      .first()
       .click();
     await expect
       .poll(

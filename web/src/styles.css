@@ -107,6 +107,11 @@ input::placeholder,
 textarea::placeholder {
   color: #70828e;
 }
+select {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 input[type="checkbox"] {
   accent-color: var(--accent);
 }

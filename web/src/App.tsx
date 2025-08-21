@@ -311,12 +311,20 @@ export default function App() {
             <button
               key={item.id}
               className={tab === item.id ? "nav-item active" : "nav-item"}
+              aria-label={item.title}
+              aria-description={
+                item.id === "jobs" && activeJobs
+                  ? `${activeJobs} active ${activeJobs === 1 ? "job" : "jobs"}`
+                  : undefined
+              }
               aria-current={tab === item.id ? "page" : undefined}
               onClick={() => setTab(item.id)}
             >
               <item.icon size={18} />
               <span>{item.title}</span>
-              {item.id === "jobs" && activeJobs ? <b>{activeJobs}</b> : null}
+              {item.id === "jobs" && activeJobs ? (
+                <b aria-hidden="true">{activeJobs}</b>
+              ) : null}
             </button>
           ))}
         </nav>

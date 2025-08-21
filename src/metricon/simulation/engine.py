@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any
+from typing import Any, Callable
 
 import numpy as np
 
@@ -60,8 +60,14 @@ class SimulationConfig:
         return asdict(self)
 
 
-def simulate(config: SimulationConfig) -> dict[str, Any]:
+def simulate(
+    config: SimulationConfig,
+    progress: Callable[[float, str], None] | None = None,
+    cancelled: Callable[[], bool] | None = None,
+) -> dict[str, Any]:
     config.validate()
+    if cancelled and cancelled():
+        raise RuntimeError("Cooperative task cancellation")
     skills = list(config.skills)
     duration = {
         skill: config.duration_seconds.get(skill, config.assumed_duration_seconds)
@@ -100,7 +106,10 @@ def simulate(config: SimulationConfig) -> dict[str, Any]:
     outcomes = []
     trajectories = []
     results: dict[str, list[dict[str, float]]] = {policy: [] for policy in config.policies}
+    total_trials = config.repetitions * len(config.policies)
     for repetition in range(config.repetitions):
+        if cancelled and cancelled():
+            raise RuntimeError("Cooperative task cancellation")
         replicate_seed = config.seed + repetition
         environmental_rng = np.random.default_rng(np.random.SeedSequence([replicate_seed, 0]))
         random_values = environmental_rng.random((config.max_actions + 1, len(skills), 3))
@@ -121,6 +130,8 @@ def simulate(config: SimulationConfig) -> dict[str, Any]:
                 if config.budget_mode == "questions"
                 else config.max_actions
             ):
+                if cancelled and cancelled():
+                    raise RuntimeError("Cooperative task cancellation")
                 available = [
                     skill for skill in skills if elapsed + duration[skill] <= config.budget_seconds
                 ]
@@ -172,6 +183,11 @@ def simulate(config: SimulationConfig) -> dict[str, Any]:
                         "events": history,
                         "result": result,
                     }
+                )
+            if progress:
+                progress(
+                    len(outcomes) / total_trials,
+                    f"Completed {len(outcomes)} of {total_trials} policy trials",
                 )
     summaries = {}
     for policy, repetitions in results.items():

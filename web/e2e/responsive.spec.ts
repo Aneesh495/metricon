@@ -136,13 +136,43 @@ for (const width of [320, 360, 390, 768, 1280, 1440]) {
       "Jobs",
     ]) {
       await navigate(page, name);
-      await expect
-        .poll(() =>
-          page.evaluate(
-            () => document.documentElement.scrollWidth <= innerWidth + 2,
-          ),
-        )
-        .toBe(true);
+      try {
+        await expect
+          .poll(() =>
+            page.evaluate(
+              () => document.documentElement.scrollWidth <= innerWidth + 2,
+            ),
+          )
+          .toBe(true);
+      } catch (error) {
+        const layout = await page.evaluate(() => ({
+          width: innerWidth,
+          scrollWidth: document.documentElement.scrollWidth,
+          overflow: Array.from(document.querySelectorAll("body, body *"))
+            .filter((element) => {
+              if (element.closest("nav")) return false;
+              return (
+                element.getBoundingClientRect().right > innerWidth + 2 ||
+                element.scrollWidth > element.clientWidth + 2
+              );
+            })
+            .slice(0, 80)
+            .map((element) => ({
+              tag: element.tagName,
+              class: element.className,
+              text: element.textContent?.slice(0, 80),
+              right: element.getBoundingClientRect().right,
+              width: element.clientWidth,
+              scroll: element.scrollWidth,
+              overflow: getComputedStyle(element).overflowX,
+            })),
+        }));
+        await testInfo.attach(`${name}-overflow`, {
+          body: JSON.stringify(layout, null, 2),
+          contentType: "application/json",
+        });
+        throw error;
+      }
       if (width === 390 || width === 1440)
         await page.screenshot({
           path: `.metricon/verification/browser/${testInfo.project.name}-${width}-${name.replaceAll(" ", "-")}.png`,
