@@ -2,10 +2,61 @@ import json
 import time
 
 import pytest
+from fastapi.testclient import TestClient
 
+from metricon.api.app import Settings, create_app
 from metricon.ingest.demo import demo_workspace
 from metricon.simulation.engine import SimulationConfig, simulate
 from metricon.tasks.coordinator import JobCoordinator
+
+
+@pytest.mark.parametrize("mode", ["time", "questions"])
+def test_simulation_rejects_a_budget_without_an_affordable_action(mode):
+    with pytest.raises(ValueError, match="cannot fund an available action"):
+        simulate(SimulationConfig(repetitions=2, budget_seconds=59, budget_mode=mode))
+    with pytest.raises(ValueError, match="cannot fund an available action"):
+        simulate(
+            SimulationConfig(
+                repetitions=2,
+                budget_seconds=79,
+                budget_mode=mode,
+                skills=("a", "b"),
+                duration_seconds={"a": 80, "b": 120},
+            )
+        )
+    boundary = simulate(SimulationConfig(repetitions=2, budget_seconds=60, budget_mode=mode))
+    assert all(outcome["actions"] == 1 for outcome in boundary["outcomes"])
+
+
+def test_api_rejects_unaffordable_simulation_without_queuing(catalog):
+    demo = demo_workspace(catalog, learners=2, attempts=20)
+    workspace = demo["workspace"]["id"]
+    with TestClient(create_app(Settings(catalog.root), start_jobs=False)) as client:
+        for mode in ["time", "questions"]:
+            response = client.post(
+                f"/api/workspaces/{workspace}/simulations",
+                headers={"X-Metricon-Client": "1"},
+                json={"repetitions": 2, "budget_seconds": 59, "budget_mode": mode},
+            )
+            assert response.status_code == 422
+            assert "cannot fund an available action" in response.json()["detail"]
+        assert client.get(f"/api/workspaces/{workspace}/jobs").json() == []
+
+
+def test_duplicate_policies_cannot_duplicate_monte_carlo_samples(catalog):
+    with pytest.raises(ValueError, match="policies must be unique"):
+        simulate(SimulationConfig(repetitions=2, policies=("random", "random")))
+    demo = demo_workspace(catalog, learners=2, attempts=20)
+    workspace = demo["workspace"]["id"]
+    with TestClient(create_app(Settings(catalog.root), start_jobs=False)) as client:
+        response = client.post(
+            f"/api/workspaces/{workspace}/simulations",
+            headers={"X-Metricon-Client": "1"},
+            json={"policies": ["random", "random"]},
+        )
+        assert response.status_code == 422
+        assert "policies must be unique" in response.json()["detail"]
+        assert client.get(f"/api/workspaces/{workspace}/jobs").json() == []
 
 
 def test_progress_preserves_seeded_outcomes_and_reports_completed_trials():

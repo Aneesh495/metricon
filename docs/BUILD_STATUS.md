@@ -16,6 +16,10 @@ The following workflow run passed 22 cases, failed one cancellation case and lef
 
 The strengthened cancellation check then exposed an older cached task card being selected. It now selects the submitted job by identity. Simulation workers check cancellation at seed/action boundaries and report actual completed policy trials. Remediation passed all 24 workflow cases across the three browser profiles, seven task/simulation regressions, lint and the strict production client build. Next action: commit this increment, freeze source and rerun complete acceptance and verification.
 
+That frozen campaign passed 96 Python tests, 10 unit tests, all 66 browser cases, 10,000 import records, 1,000 analytical datasets, 100 interruptions and the simulation campaign. It was interrupted before final publication after a separate boundary check found unaffordable simulation budgets reporting zero accuracy with no actions. The engine/API now reject those configurations while accepting the exact action-cost boundary. Raw failure output is retained. Next action: check the new contract, commit it, then rerun complete acceptance on the corrected source.
+
+The same contract review found duplicate policy names repeating identical seed samples. Policies now require uniqueness before fitting any simulation summaries. All 18 focused simulation, process and API checks passed. Next action: commit the eligibility changes and reproduce final frozen-source acceptance; the interrupted campaign remains unaccepted evidence.
+
 The implemented laboratory passed the complete correctness campaign and independent verification on October 1, 2026. The synthetic predictive targets passed. The canonical import throughput objective remains unmet and is reported separately.
 
 ## Implemented contracts

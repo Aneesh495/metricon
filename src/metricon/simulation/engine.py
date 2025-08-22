@@ -40,10 +40,14 @@ class SimulationConfig:
             raise ValueError("Invalid equal-budget simulation mode")
         if not self.skills or len(self.skills) > 1000 or len(set(self.skills)) != len(self.skills):
             raise ValueError("Skills must be a nonempty unique bounded list")
-        if not self.policies or not set(self.policies).issubset(
-            {"random", "weakest", "uncertainty", "spaced", "budget"}
+        if (
+            not self.policies
+            or len(set(self.policies)) != len(self.policies)
+            or not set(self.policies).issubset(
+                {"random", "weakest", "uncertainty", "spaced", "budget"}
+            )
         ):
-            raise ValueError("Unsupported simulation policy")
+            raise ValueError("Simulation policies must be unique and supported")
         values = [
             self.budget_seconds,
             self.assumed_duration_seconds,
@@ -51,6 +55,11 @@ class SimulationConfig:
         ]
         if any(not np.isfinite(value) or value <= 0 for value in values):
             raise ValueError("Simulated time assumptions must be finite positive values")
+        if min(
+            self.duration_seconds.get(skill, self.assumed_duration_seconds)
+            for skill in self.skills
+        ) > self.budget_seconds:
+            raise ValueError("Simulation time budget cannot fund an available action")
         for skill in self.skills:
             BKTParameters(**self.parameters.get(skill, {}))
 
@@ -164,7 +173,7 @@ def simulate(
                         }
                     )
             result = {
-                "accuracy": successes / actions if actions else 0.0,
+                "accuracy": successes / actions,
                 "actions": float(actions),
                 "simulated_latent_known_fraction": sum(known.values()) / len(skills),
                 "elapsed_seconds": elapsed,
