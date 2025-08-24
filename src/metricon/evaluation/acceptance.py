@@ -367,10 +367,10 @@ def audit_research(catalog: Catalog, identifiers: list[str]) -> dict[str, Any]:
 def verify_evidence(root: Path) -> dict[str, Any]:
     root = root.resolve()
     destination = root / "verification"
-    path = destination / "ACCEPTANCE.json"
-    if not path.is_file():
+    accepted_path = destination / "ACCEPTANCE.json"
+    if not accepted_path.is_file():
         raise ValueError("ACCEPTANCE.json is missing; verification does not regenerate evidence")
-    result = read(path)
+    result = read(accepted_path)
     errors = verify_files(root, result["evidence"])
     current = source_manifest(Path(__file__).parents[3])
     if current["hash"] != result["source_hash"]:
@@ -406,4 +406,4 @@ def verify_evidence(root: Path) -> dict[str, Any]:
         errors.append("Source snapshot manifest was altered")
     if errors:
         raise ValueError("Evidence verification failed: " + "; ".join(errors))
-    return {"valid": True, "path": str(path), "gates": gates, "regenerated": False}
+    return {"valid": True, "path": str(accepted_path), "gates": gates, "regenerated": False}

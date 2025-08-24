@@ -20,6 +20,8 @@ That frozen campaign passed 96 Python tests, 10 unit tests, all 66 browser cases
 
 The same contract review found duplicate policy names repeating identical seed samples. Policies now require uniqueness before fitting any simulation summaries. All 18 focused simulation, process and API checks passed. Next action: commit the eligibility changes and reproduce final frozen-source acceptance; the interrupted campaign remains unaccepted evidence.
 
+The eligibility source passed complete acceptance and verification: 100 Python tests, 10 unit tests, 66 browser cases and every correctness gate. Verification's printed path exposed a variable-shadowing defect even though its checks passed; the output now retains the acceptance record's path. Next action: check and commit that reporting fix, then reproduce evidence on the resulting source.
+
 The implemented laboratory passed the complete correctness campaign and independent verification on October 1, 2026. The synthetic predictive targets passed. The canonical import throughput objective remains unmet and is reported separately.
 
 ## Implemented contracts
