@@ -1,5 +1,3 @@
-# Boilerexams Frontend Application Project
-
 A modern, interactive quiz analytics dashboard built with React, TypeScript, and Tailwind CSS. This application provides comprehensive insights into quiz performance, helping users track their progress, analyze question difficulty, and benchmark their results against others.
 
 ## 🚀 Features
