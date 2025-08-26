@@ -1,6 +1,6 @@
 # Scientific workbench walkthrough
 
-Run `make bootstrap` and `.venv/bin/metricon serve --port 8000`, then open [the local workbench](http://127.0.0.1:8000). The following images were captured from the running application during browser verification. They show an authored legacy fixture and an explicitly synthetic sandbox. No public learner history is redistributed in these screenshots.
+Run `make bootstrap` and `.venv/bin/metricon serve --port 8000`, then open [the local workbench](http://127.0.0.1:8000). The following images were captured from the running application during automated and manual browser verification. They show an authored legacy fixture and an explicitly synthetic sandbox. No public learner history is redistributed in these screenshots.
 
 ## Inspect observations and their limits
 
@@ -28,7 +28,9 @@ Policy laboratory ranks actions from observed support, uncertainty, priorities a
 
 Navigation, forms, notices and table alternatives remain usable at the verified mobile viewport. Long immutable IDs wrap. Keyboard activation and accessible chart alternatives are covered by the browser workflow.
 
-![Readable synthetic observation filters at the mobile viewport](screenshots/mobile-viewport.png)
+![Readable synthetic observation filters at a 390 pixel mobile viewport](screenshots/mobile-viewport.png)
+
+This compact viewport capture uses a fixed synthetic research sandbox. The WebKit capture below uses the smaller browser verification population; each image retains its own eligible counts.
 
 The [responsive workflow](../web/e2e/responsive.spec.ts) checks 320 through 1440 pixel widths under laptop Chromium, touch Chromium and mobile WebKit. These are browser emulations, not measurements on physical phones. Coarse-pointer controls retain usable touch targets and 16 pixel input text; reduced-motion preferences disable spinner animation. Long select labels use ellipsis inside the control while native dropdowns retain their full options. Timeline bins can be inspected by native selection, and calibration data has an expandable table.
 

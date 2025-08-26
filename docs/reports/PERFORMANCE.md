@@ -59,13 +59,15 @@ The import worker's original four-history BKT timer mostly exercised sparse fall
 
 | Source input records | Complete fitting rows | Learners/optimized skills | Global fit p50 ms | BKT fit p50 seconds | Max fit process RSS GiB |
 | --- | --- | --- | --- | --- | --- |
-| 100,000 | 80 | 8/2 | 0.008 | 0.0239 | 0.215 |
-| 1,000,000 | 800 | 8/2 | 0.053 | 0.2491 | 0.248 |
-| 10,000,000 | 8000 | 8/2 | 0.598 | 2.6341 | 0.331 |
+| 100,000 | 80 | 8/2 | 0.033 | 0.1128 | 0.214 |
+| 1,000,000 | 800 | 8/2 | 0.106 | 1.1253 | 0.259 |
+| 10,000,000 | 8,000 | 8/2 | 1.100 | 4.6128 | 0.311 |
 
-The actual EdNet experiment used all 118,288 training rows before model-specific eligibility restrictions. Its combined fit/predict/diagnostic runtime was 459.43 seconds. Its process-lifetime peak RSS was 1.485 GiB, including prior allocations. Per-model runtime includes fitting and prediction, not isolated optimizer time. BKT used 38.39 seconds; selected logistic used 10.56; 1PL used 7.63; 2PL used 8.71. [Research support and diagnostics](RESEARCH.md) explain what those models fitted.
+The actual EdNet experiment used all 118,288 training rows before model-specific eligibility restrictions. Its combined fit/predict/diagnostic runtime was 322.93 seconds. Its process-lifetime peak RSS was 1.733 GiB, including prior allocations. Per-model runtime includes fitting and prediction, not isolated optimizer time. BKT used 40.11 seconds; selected logistic used 9.92; 1PL used 7.70; 2PL used 8.26. [Research support and diagnostics](RESEARCH.md) explain what those models fitted.
 
 The complete public experiment artifact occupies 210.35 MiB, including raw probabilities, parameters, source, exact lock and diagnostics. Acquisition archives and normalized source observations are separate.
+
+The current campaign reused the import/query measurements only after checking their unchanged measurement-module hashes, normalized corpus contents and preserved source snapshots. It reran all 15 fitting measurements and the complete public experiment on the accepted source. Changes to relevant measurement modules invalidate those cached repetitions.
 
 ## Failures, scope and reproduction
 
@@ -86,4 +88,4 @@ make verify
 
 ![Five-repetition import medians and maximum import RSS at each scale. Cold/warm query methods and unsuccessful performance objectives remain in the report.](../figures/scale.png)
 
-Five-repetition import medians and maximum import RSS at each scale. Cold/warm query methods and unsuccessful performance objectives remain in the report. [Exact figure data](../figures/figure-data.json). Local [raw figure artifact](../../.metricon/artifacts/3f0f198ac33523d8ae123874349a2282681747606f4b3dbf079b9d04c9315b03/figure-data.json) links to run `3b3d8adfa1a6bdbbcbecc8075a040765c14da099a617cd056dd70115783fbffb` and dataset `38f4cea01effb1a41f07bf223b006e70167f55b409e85e0e4d17431bdf9ebcbe`.
+Five-repetition import medians and maximum import RSS at each scale. Cold/warm query methods and unsuccessful performance objectives remain in the report. [Exact figure data](../figures/figure-data.json). Local [raw figure artifact](../../.metricon/artifacts/633449709e11a18a3dc650abaecbf8367f76ca098054c2dea7f3025c591e7c0d/figure-data.json) links to run `fc32b876155c76d34b1c27d890e1f47f46462b4ec8e0e2c3c65c92a785e68b4a` and dataset `38f4cea01effb1a41f07bf223b006e70167f55b409e85e0e4d17431bdf9ebcbe`.

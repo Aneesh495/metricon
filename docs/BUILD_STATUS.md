@@ -1,28 +1,14 @@
 # Build status
 
-## Current maintenance verification
+## Current verification
 
-The laptop/mobile audit found and repaired a clean-clone installation failure in hosted CI. A fresh source checkout without generated client assets now installs with `uv sync --locked`; distribution wheels still bundle the compiled client and exact dependency lock. Focused API tests and an installed-wheel check from outside the checkout passed. Responsive interaction tests are in progress. GitHub Pages cannot execute the Python service, so the complete laboratory keeps its local deployment workflow. The campaign below describes the previous accepted source; a changed source requires fresh acceptance and verification before it is accepted.
+The frozen source passed the complete correctness campaign and independent verification on October 2, 2026. All 12 required correctness gates passed, together with 100 Python tests, 10 client unit tests and 66 browser cases. Synthetic predictive targets passed. Canonical import throughput remains below its tuning objective and is reported separately.
 
-The follow-up integrity regressions reproduced historical-version submissions and unchecked research payloads, then passed after remediation. Prediction diagnostics, comparison and observed replay now carry the selected temporal fold. Deep links preserve version, learner and artifact selection across reload/back navigation and reject foreign workspace versions. Changing data clears prepared exports. Unknown model families, offline responses and clipboard denial have explicit recovery states.
+A clean source checkout installs before client compilation. Distribution wheels contain the compiled workbench, recovery manifest and exact dependency lock; an installed wheel was checked from outside the checkout. Dataset versions and temporal folds remain pinned across task submission, diagnostics, comparison and replay. Committed research payloads are checksum-checked before display. Deep links preserve workspace/version/learner/run context, and data changes clear prepared exports.
 
-The maintenance checks passed 92 Python tests, 10 client unit tests, strict typing, a production client build and 63 browser cases across laptop Chromium, touch Chromium and mobile WebKit. Each browser profile checks all seven sections at 320, 360, 390, 768, 1280 and 1440 pixels, then exercises real fitting, rolling folds, cancellation, rejection inspection, exports and navigation. The previous acceptance remains historical until the complete campaign is reproduced on the final frozen source.
+Browser verification covers laptop Chromium, touch Chromium and mobile WebKit. Every section is checked at 320, 360, 390, 768, 1280 and 1440 pixels, alongside actual fitting, rejection inspection, calibration, model comparison, running cancellation, exports and keyboard navigation. These are browser emulations, not physical-device measurements. Real network/module failures expose recovery controls. Simulation cancellation is cooperative, progress counts completed trials, and unaffordable budgets or repeated policy names are rejected before queuing work.
 
-The final selection review also repaired stale comparison output and constrained comparisons to eligible saved model families. The first focused campaign passed eight of nine cases: WebKit retained a failed module after reload. A manifest-scoped retry with a fresh module URL repaired recovery. All nine focused cases now pass, together with 11 API/integrity regressions, lint, strict typing, the production build and 10 unit checks. The failed traces remain retained locally. Next action: freeze source and reproduce the complete acceptance campaign, including all 66 browser cases.
-
-The subsequent acceptance attempt passed locked installation, lint, all 93 Python tests, strict typing, 10 client unit tests and both production builds. Browser verification stopped with 47 passed, four failed and 15 unrun cases. Three failures came from a selector matching a hidden native option rather than the fitted model table. The remaining failure exposed long native select text leaking into WebKit's document width at 320 pixels. The selector now checks the visible model cell, and select text is contained with ellipsis while full options remain available. Five independent repetitions of the unchanged narrow WebKit assertion passed. Failure logs, traces and element geometry remain retained; this attempt did not create accepted evidence. Next action: complete the workflow regressions, commit remediation, then reproduce the complete frozen-source campaign.
-
-The following workflow run passed 22 cases, failed one cancellation case and left one dependent case unrun. Its trace showed the Jobs navigation name changing to `Jobs 1` after polling received a running task. Navigation now retains a stable accessible name, and the active count is a separate accessible description. Cancellation checks explicitly wait for a real running worker and the visible badge description before navigating. This failure and its final page state remain retained locally.
-
-The strengthened cancellation check then exposed an older cached task card being selected. It now selects the submitted job by identity. Simulation workers check cancellation at seed/action boundaries and report actual completed policy trials. Remediation passed all 24 workflow cases across the three browser profiles, seven task/simulation regressions, lint and the strict production client build. Next action: commit this increment, freeze source and rerun complete acceptance and verification.
-
-That frozen campaign passed 96 Python tests, 10 unit tests, all 66 browser cases, 10,000 import records, 1,000 analytical datasets, 100 interruptions and the simulation campaign. It was interrupted before final publication after a separate boundary check found unaffordable simulation budgets reporting zero accuracy with no actions. The engine/API now reject those configurations while accepting the exact action-cost boundary. Raw failure output is retained. Next action: check the new contract, commit it, then rerun complete acceptance on the corrected source.
-
-The same contract review found duplicate policy names repeating identical seed samples. Policies now require uniqueness before fitting any simulation summaries. All 18 focused simulation, process and API checks passed. Next action: commit the eligibility changes and reproduce final frozen-source acceptance; the interrupted campaign remains unaccepted evidence.
-
-The eligibility source passed complete acceptance and verification: 100 Python tests, 10 unit tests, 66 browser cases and every correctness gate. Verification's printed path exposed a variable-shadowing defect even though its checks passed; the output now retains the acceptance record's path. Next action: check and commit that reporting fix, then reproduce evidence on the resulting source.
-
-The implemented laboratory passed the complete correctness campaign and independent verification on October 1, 2026. The synthetic predictive targets passed. The canonical import throughput objective remains unmet and is reported separately.
+The [review](reports/REVIEW.md) records each reproduced defect and its regression. Failed traces, interrupted campaigns and raw negative results remain retained locally. Only the final source-matched campaign is accepted. The complete laboratory uses its local Python service; GitHub Pages cannot execute that service.
 
 ## Implemented contracts
 
@@ -39,7 +25,7 @@ The original sample typing failure, invented peer benchmarks, cumulative-success
 
 ## Command evidence
 
-Locked Python and Node installs, lint, strict TypeScript, production client/wheel builds and browser verification passed. The final fast campaign reports 88 Python tests, 3 client unit tests and 8 browser workflows. One upstream Starlette/AnyIO deprecation warning remains visible.
+Locked Python and Node installs, lint, strict TypeScript, production client/wheel builds and browser verification passed. The final fast campaign reports 100 Python tests, 10 client unit tests and 66 browser cases. One upstream Starlette/AnyIO deprecation warning remains visible.
 
 | Command | Recorded outcome |
 | --- | --- |
@@ -52,7 +38,7 @@ Locked Python and Node installs, lint, strict TypeScript, production client/whee
 | `npm run build` | Passed; `.metricon/verification/commands/production-build.json` and its raw log. |
 | `uv build --wheel` | Passed; `.metricon/verification/commands/api-build.json` and its raw log. |
 | `npm run test:e2e` | Passed; `.metricon/verification/commands/browser.json` and its raw log. |
-| `make bootstrap` | Locked environment, client and wheel built; the final installed-wheel check also fitted all baseline/BKT/IRT families, retained the exact lock and served HTTP 200. |
+| `make bootstrap` | Locked environment, client and wheel built. Installed-wheel smoke checks fitted baseline/BKT/IRT families; the final wheel retained the exact lock and served HTTP 200 for all seven client sections. |
 | `make dev`, `make demo` | Local API/client startup and explicit demo creation exercised. Startup failure propagates and owned process groups are cleaned up. |
 | `make test-integration` | Independent import, analytical and interruption campaigns completed; final acceptance reran or checked their source-matched evidence. |
 | CLI walkthrough | 23 actual commands exercised import/retry/rejection, analysis, fitting, forward/learner-held-out/rolling evaluation, paired comparison, planning, simulation and all four export formats. Expected invalid validation returned nonzero. |
@@ -85,6 +71,6 @@ Actual [figures](figures) link to raw figure data and immutable run IDs. [Workbe
 
 ## Evidence and next action
 
-Accepted source/test/lock hash: `7452cb6a232a9ca9be2ac9480e1041410ff2aaf2246fe20b9da019068ded8b17`. The full `.metricon/verification/ACCEPTANCE.json` indexes 2,145 evidence files and the exact run artifacts. Raw predictions, dependency locks, source snapshots, split/feature scopes, bootstrap seeds, benchmark profiles and simulation traces remain in ignored local storage.
+Accepted source/test/lock hash: `14e2cd863c59bd698bb4e337b816299d1445c8de2fcc2273e1ef16d42eb572e4`. The full `.metricon/verification/ACCEPTANCE.json` indexes 2,454 evidence files and the exact run artifacts. Raw predictions, dependency locks, source snapshots, split/feature scopes, bootstrap seeds, benchmark profiles and simulation traces remain in ignored local storage.
 
 Incomplete required correctness gates: none. The remaining measured optimization objective is import throughput. Reproduce `make acceptance` and `make verify` before comparing a changed implementation. Changes to data or transformation contracts require new dependent artifacts and fresh verification; existing results remain immutable.
