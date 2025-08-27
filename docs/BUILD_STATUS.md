@@ -2,6 +2,8 @@
 
 ## Current verification
 
+The subsequent hosted campaign passed clean installation, fast checks and wheel construction, then passed 63 browser cases and failed three Linux WebKit width checks. Its native run/learner selects reported visible overflow despite the clipping rule used on macOS. Single-choice controls now have authored appearance and a chevron while retaining native selection. The campaign below remains historical until the unchanged browser assertions and fresh source-matched acceptance pass. Strict typing, the production build and all 18 local viewport cases passed after correction. Next action: verify hosted Linux and reproduce final acceptance.
+
 The frozen source passed the complete correctness campaign and independent verification on October 2, 2026. All 12 required correctness gates passed, together with 100 Python tests, 10 client unit tests and 66 browser cases. Synthetic predictive targets passed. Canonical import throughput remains below its tuning objective and is reported separately.
 
 A clean source checkout installs before client compilation. Distribution wheels contain the compiled workbench, recovery manifest and exact dependency lock; an installed wheel was checked from outside the checkout. Dataset versions and temporal folds remain pinned across task submission, diagnostics, comparison and replay. Committed research payloads are checksum-checked before display. Deep links preserve workspace/version/learner/run context, and data changes clear prepared exports.
