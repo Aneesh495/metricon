@@ -83,11 +83,18 @@ def test_bundle_features_do_not_see_coupled_answers():
     ]
     features, _ = HistoryFeatures().transform(rows)
     assert features[0]["learner_log_attempts"] == features[1]["learner_log_attempts"] == 0
-    assert features[2]["learner_log_attempts"] == np.log1p(2)
+    expected = np.log1p(2)
+    assert features[2]["learner_log_attempts"] == pytest.approx(
+        expected, rel=0, abs=2 * np.spacing(expected)
+    )
+    assert features[2]["recent_count"] == 2
+    assert features[2]["learner_rate"] == 0.75
     mutated = [dict(row) for row in rows]
     mutated[1]["correct"] = False
     changed, _ = HistoryFeatures().transform(mutated)
     assert features[0] == changed[0] and features[1] == changed[1]
+    assert changed[2]["recent_count"] == 2
+    assert changed[2]["learner_rate"] == 0.5
 
 
 def test_bkt_coupled_objective_matches_independent_scalar_reference():
