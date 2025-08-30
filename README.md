@@ -55,7 +55,7 @@ make acceptance
 make verify
 ```
 
-The full campaign takes longer than fast checks. It runs adversarial imports, independent analytical references, actual interruption/restart cases, every scale repetition, fixed synthetic comparisons, public research, simulations and browser workflows. `verify` checks existing evidence without regenerating it. Missing or changed evidence fails.
+The full campaign takes longer than fast checks. It generates and audits adversarial imports, independent analytical references, actual interruption/restart cases, every scale repetition, fixed synthetic comparisons, public research, simulations and browser workflows. Relevant source changes invalidate retained costly evidence. Every acceptance run repeats locked installation, fast checks, production builds, browser workflows and the public experiment. `verify` checks existing evidence without regenerating it. Missing or changed evidence fails.
 
 The deterministic EdNet KT1 subset has 200,653 valid interactions from 1,268 learners. Its [dataset card](docs/PUBLIC_DATA.md) records acquisition, exclusion and shifted-time semantics. The [research report](docs/reports/RESEARCH.md) retains all baselines, calibration and ablations, including weak IRT results. The [performance report](docs/reports/PERFORMANCE.md) records raw repetitions, RSS, query distributions and unmet throughput objectives. Predictive quality and performance objectives remain separate from system correctness.
 

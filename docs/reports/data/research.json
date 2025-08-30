@@ -643,7 +643,7 @@
       },
       "eligible": true,
       "parameters_hash": "1e53510eb784142e5f385da3a060e524543d60e96eb30b03f23d4feafbe3ab16",
-      "runtime_seconds": 40.10656441701576,
+      "runtime_seconds": 41.15099787496729,
       "test": {
         "accuracy": {
           "confidence": 0.95,
@@ -1263,7 +1263,7 @@
       },
       "eligible": true,
       "parameters_hash": "9eac1a36f16e0b559263ded6c1d652a2c2f5a4eeae615abdb40381ccc3eb4cbf",
-      "runtime_seconds": 61.65273608302232,
+      "runtime_seconds": 60.812388791993726,
       "test": {
         "accuracy": {
           "confidence": 0.95,
@@ -1883,7 +1883,7 @@
       },
       "eligible": true,
       "parameters_hash": "fad5e17da435ba6dec5617d2de73a78182dfe7c6fd95497f692aa9b79015383f",
-      "runtime_seconds": 92.43019829201512,
+      "runtime_seconds": 90.75099924998358,
       "test": {
         "accuracy": {
           "confidence": 0.95,
@@ -2503,7 +2503,7 @@
       },
       "eligible": true,
       "parameters_hash": "0e2db874f3d9e1933caedee3892b36b6a368cd6dd1ec9b34365f984ca879f415",
-      "runtime_seconds": 3.07663974998286,
+      "runtime_seconds": 2.74998008296825,
       "test": {
         "accuracy": {
           "confidence": 0.95,
@@ -3123,7 +3123,7 @@
       },
       "eligible": true,
       "parameters_hash": "a55507fcf3d1f91b3dcf1381e9a8db31500e480b24593b58afcf88ac8bb6b915",
-      "runtime_seconds": 9.594399124966003,
+      "runtime_seconds": 10.050483500002883,
       "test": {
         "accuracy": {
           "confidence": 0.95,
@@ -3743,7 +3743,7 @@
       },
       "eligible": true,
       "parameters_hash": "3857986e9bcc35f994c64b787c84e63959c064469a53cd3d7fcfceb562a4fcd6",
-      "runtime_seconds": 10.40526041702833,
+      "runtime_seconds": 10.522251082991716,
       "test": {
         "accuracy": {
           "confidence": 0.95,
@@ -4363,7 +4363,7 @@
       },
       "eligible": true,
       "parameters_hash": "ce581ada01b69d640f1118b0e988c99e3ad05a969034f5c0c6f511eebb1b9410",
-      "runtime_seconds": 7.700966208009049,
+      "runtime_seconds": 8.120905750023667,
       "test": {
         "accuracy": {
           "confidence": 0.95,
@@ -4983,7 +4983,7 @@
       },
       "eligible": true,
       "parameters_hash": "e8617689b7b30f12baf919bead7d7ac6b3106c273a0a8b7a3df3b39d5907ae41",
-      "runtime_seconds": 8.259112916013692,
+      "runtime_seconds": 8.835217665997334,
       "test": {
         "accuracy": {
           "confidence": 0.95,
@@ -5603,7 +5603,7 @@
       },
       "eligible": true,
       "parameters_hash": "c4ab1086f847acdfab573c3749ce31bf3068ed6607e595162bd98264e24aa482",
-      "runtime_seconds": 3.6208277079858817,
+      "runtime_seconds": 3.5147901250165887,
       "test": {
         "accuracy": {
           "confidence": 0.95,
@@ -6223,7 +6223,7 @@
       },
       "eligible": true,
       "parameters_hash": "10fc0a282ca3c68dac59decd2a4882cf23341b021ed2d58a368b470dad2ea459",
-      "runtime_seconds": 9.45766012504464,
+      "runtime_seconds": 10.406744209001772,
       "test": {
         "accuracy": {
           "confidence": 0.95,
@@ -6843,7 +6843,7 @@
       },
       "eligible": true,
       "parameters_hash": "b20b1a957bd2b16439a024d35a526f630cd6e36be85955a31e30e5abb32debef",
-      "runtime_seconds": 9.917627082963008,
+      "runtime_seconds": 11.018721207976341,
       "test": {
         "accuracy": {
           "confidence": 0.95,
@@ -7463,7 +7463,7 @@
       },
       "eligible": true,
       "parameters_hash": "3e1df493f08246dab14b1c2015dee1fa12983bade1b4dda46f971fb5b8896179",
-      "runtime_seconds": 10.238587874977384,
+      "runtime_seconds": 11.23475095903268,
       "test": {
         "accuracy": {
           "confidence": 0.95,
@@ -8083,7 +8083,7 @@
       },
       "eligible": true,
       "parameters_hash": "463333e9bd42b11d7b118893e74058db5c3d010cf4b94e29a10823100054d01a",
-      "runtime_seconds": 7.687219207989983,
+      "runtime_seconds": 8.377083625004161,
       "test": {
         "accuracy": {
           "confidence": 0.95,
@@ -8703,7 +8703,7 @@
       },
       "eligible": true,
       "parameters_hash": "347a373cfbb861611a1d24dc9624055584161e6ca3ead6f4030009cbd17e33b9",
-      "runtime_seconds": 11.89210037497105,
+      "runtime_seconds": 10.095122958999127,
       "test": {
         "accuracy": {
           "confidence": 0.95,
@@ -9323,7 +9323,7 @@
       },
       "eligible": true,
       "parameters_hash": "909c55ae9fc3f00394d9da19552019eb88dbe7f2cf1510be3682c30d759c4dac",
-      "runtime_seconds": 3.886213958961889,
+      "runtime_seconds": 3.5575922920252196,
       "test": {
         "accuracy": {
           "confidence": 0.95,
@@ -9701,7 +9701,7 @@
     }
   },
   "pipeline_hash": "c2740d04a128a8bba3a55e1fd4b1ec7bf5da99467753f911ec58dbecf8bac2b7",
-  "run": "fc32b876155c76d34b1c27d890e1f47f46462b4ec8e0e2c3c65c92a785e68b4a",
+  "run": "ac4181703218341c266bded20269011ecfa7a759bfb40ad39701af1759d411fd",
   "selected_logistic": "logistic_c1",
   "simulation": {
     "adaptive_range_across_regimes": [
@@ -11221,7 +11221,7 @@
     "trajectories": 18000,
     "version": "policy-campaign/1"
   },
-  "source_hash": "14e2cd863c59bd698bb4e337b816299d1445c8de2fcc2273e1ef16d42eb572e4",
+  "source_hash": "b1db7cef282b10696b853b3b113ea019c1c0e1d077e21637aa22e9a2e061561f",
   "split_hash": "15e20929462b53e29eedcc9ba90e189a06729b08851ed3bb40ddcc6a8cdaf827",
   "synthetic": {
     "datasets": [

@@ -2,13 +2,13 @@
 
 ## Current verification
 
-The select correction passed all 12 local acceptance gates and independent verification. The next hosted campaign stopped at a numerical test: Linux's independent scalar/NumPy logarithms differed by one representable rounding step. The test now allows two rounding steps and additionally checks exact observation counts and the next unit's changed performance estimate. Coupled-answer feature equality remains exact. The recorded local campaign below is historical while this test correction receives fresh acceptance and hosted Linux verification. Next action: complete those checks and refresh the measured reports.
-
 The frozen source passed the complete correctness campaign and independent verification on October 2, 2026. All 12 required correctness gates passed, together with 100 Python tests, 10 client unit tests and 66 browser cases. Synthetic predictive targets passed. Canonical import throughput remains below its tuning objective and is reported separately.
 
 A clean source checkout installs before client compilation. Distribution wheels contain the compiled workbench, recovery manifest and exact dependency lock; an installed wheel was checked from outside the checkout. Dataset versions and temporal folds remain pinned across task submission, diagnostics, comparison and replay. Committed research payloads are checksum-checked before display. Deep links preserve workspace/version/learner/run context, and data changes clear prepared exports.
 
 Browser verification covers laptop Chromium, touch Chromium and mobile WebKit. Every section is checked at 320, 360, 390, 768, 1280 and 1440 pixels, alongside actual fitting, rejection inspection, calibration, model comparison, running cancellation, exports and keyboard navigation. These are browser emulations, not physical-device measurements. Real network/module failures expose recovery controls. Simulation cancellation is cooperative, progress counts completed trials, and unaffordable budgets or repeated policy names are rejected before queuing work.
+
+The [hosted Linux campaign](https://github.com/Aneesh495/metricon/actions/runs/37075055236) passed the same 66 browser cases after the select appearance correction. Numerical feature checks tolerate only two representable rounding steps when independent logarithm implementations differ; coupled histories, observation counts and posterior updates remain checked directly.
 
 The [review](reports/REVIEW.md) records each reproduced defect and its regression. Failed traces, interrupted campaigns and raw negative results remain retained locally. Only the final source-matched campaign is accepted. The complete laboratory uses its local Python service; GitHub Pages cannot execute that service.
 
@@ -73,6 +73,6 @@ Actual [figures](figures) link to raw figure data and immutable run IDs. [Workbe
 
 ## Evidence and next action
 
-Accepted source/test/lock hash: `14e2cd863c59bd698bb4e337b816299d1445c8de2fcc2273e1ef16d42eb572e4`. The full `.metricon/verification/ACCEPTANCE.json` indexes 2,454 evidence files and the exact run artifacts. Raw predictions, dependency locks, source snapshots, split/feature scopes, bootstrap seeds, benchmark profiles and simulation traces remain in ignored local storage.
+Accepted source/test/lock hash: `b1db7cef282b10696b853b3b113ea019c1c0e1d077e21637aa22e9a2e061561f`. The full `.metricon/verification/ACCEPTANCE.json` indexes 2,454 evidence files and the exact run artifacts. Raw predictions, dependency locks, source snapshots, split/feature scopes, bootstrap seeds, benchmark profiles and simulation traces remain in ignored local storage.
 
 Incomplete required correctness gates: none. The remaining measured optimization objective is import throughput. Reproduce `make acceptance` and `make verify` before comparing a changed implementation. Changes to data or transformation contracts require new dependent artifacts and fresh verification; existing results remain immutable.
