@@ -20,8 +20,8 @@
 
 1. **Clone the repository**
    ```bash
-   git clone github.com/Aneesh495/LocalStorageStats
-   cd LocalStorageStats
+   git clone https://github.com/Aneesh495/metricon.git
+   cd metricon
    ```
 
 2. **Install dependencies**
