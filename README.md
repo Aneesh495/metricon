@@ -1,19 +1,31 @@
 # Metricon
 
-Quiz and drill performance console. Ingest exported browser submission JSON,
-compute accuracy and attempt metrics, and render filters plus charts in a React
-client with a thin Express host.
+Analytics dashboard for quiz and drill exports: paste or load browser JSON snapshots, normalize attempts in `data-processor.ts`, and drive Recharts views (accuracy, streaks, per-question breakdown). Express hosts the API and production static bundle; Vite builds the client.
 
-## Architecture
+## Pipeline
 
 ```mermaid
 flowchart LR
-  Export[export JSON] --> API[server Express]
-  API --> Proc[data-processor]
-  Proc --> UI[client Recharts]
+  JSON[Export JSON] --> Norm[data-processor.ts]
+  Norm --> Metrics[aggregates + difficulty heuristics]
+  Metrics --> UI[client charts / tables]
+  API[server Express] --> Norm
 ```
 
-## Quick start
+Typical inputs mirror `localStorage` submission history: attempt timestamps, correctness, question ids, and optional metadata from practice sites. The server path is thin; most aggregation runs in shared TypeScript used by the client.
+
+## Monorepo build
+
+| Script | Output |
+| --- | --- |
+| `npm run dev` | `tsx server/index.ts` + Vite HMR on client |
+| `npm run build` | Vite client to `dist/public`; esbuild server bundle to `dist/` |
+| `npm run start` | Node serves API + static assets |
+| `npm run check` | Full-project `tsc` |
+
+Shared types in `shared/` keep API responses aligned with UI hooks (`use-quiz-data.tsx`).
+
+## Run
 
 ```bash
 git clone https://github.com/Aneesh495/metricon.git
@@ -22,20 +34,20 @@ npm install
 npm run dev
 ```
 
-## Scripts
-
-| Command | Purpose |
-| --- | --- |
-| `npm run dev` | Client + API with hot reload |
-| `npm run build` | Production bundles |
-| `npm run start` | Serve compiled server |
-| `npm run check` | TypeScript check |
+Default dev URL is printed on startup (commonly port **5001**).
 
 ## Layout
 
-- `client/` - dashboard, filters, charts
-- `server/` - API and static hosting
-- `shared/` - shared types
+| Path | Role |
+| --- | --- |
+| `client/src/utils/data-processor.ts` | Normalization + metric derivations |
+| `client/src/components/` | Stats overview, performance insights, charts |
+| `server/index.ts` | Express entry, Vite middleware in dev |
+| `shared/` | Types shared across tiers |
+
+## CI
+
+GitHub Actions: `npm ci`, `npm run check` on push/PR.
 
 ## License
 
