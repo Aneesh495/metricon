@@ -1,34 +1,45 @@
-# Metricon
+# LocalStorageStats
 
-Metrics console for quiz and drill performance: same Express + Vite monorepo
-pattern as LocalStorageStats, tuned for longitudinal tracking, difficulty
-scoring, and export-friendly aggregates recruiters can skim in a demo.
+Quiz performance dashboard that ingests exported browser `localStorage` submission
+JSON, aggregates accuracy and attempt metrics, and renders interactive charts in
+a React client backed by a thin Express API.
 
 ## Architecture
 
 ```mermaid
-flowchart TB
-  Snapshots[JSON / localStorage exports] --> Ingest[server ingestion]
-  Ingest --> Metrics[aggregations and difficulty scores]
-  Metrics --> Dash[client charts and tables]
+flowchart LR
+  Export[localStorage JSON export] --> API[server/ Express]
+  API --> Proc[data-processor]
+  Proc --> UI[client/ React + Recharts]
 ```
 
 ## Quick start
 
 ```bash
-git clone https://github.com/Aneesh495/metricon.git
-cd metricon
+git clone https://github.com/Aneesh495/LocalStorageStats.git
+cd LocalStorageStats
 npm install
 npm run dev
 ```
 
-## Differentiation
+Open the URL printed by the dev server (default port 5001).
 
-| Concern | Metricon focus |
+## Scripts
+
+| Command | Purpose |
 | --- | --- |
-| Time series | Progress and rolling accuracy |
-| Question drill-down | Per-item attempt counts and correctness |
-| Export | CSV-friendly tables for external analysis |
+| `npm run dev` | Vite client + API with hot reload |
+| `npm run build` | Production bundles |
+| `npm run start` | Serve compiled server |
+| `npm run check` | TypeScript check |
+
+## Layout
+
+- `client/` - dashboard, filters, chart components
+- `server/` - ingestion endpoints and static hosting
+- `shared/` - shared types
+
+See `docs/ARCHITECTURE.md` for data flow detail.
 
 ## License
 
