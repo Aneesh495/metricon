@@ -1,5 +1,8 @@
 # LocalStorageStats
 
+Canonical public repo for this project (formerly duplicated under the name
+**metricon**, now private).
+
 Quiz performance dashboard that ingests exported browser `localStorage` submission
 JSON, aggregates accuracy and attempt metrics, and renders interactive charts in
 a React client backed by a thin Express API.
