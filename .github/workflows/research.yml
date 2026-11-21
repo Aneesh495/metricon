@@ -5,7 +5,8 @@ on:
     - cron: '0 8 1 * *'
 jobs:
   campaign:
-    runs-on: ubuntu-latest
+    # Playwright 1.55 requires a supported runner image for its browsers.
+    runs-on: ubuntu-24.04
     timeout-minutes: 300
     steps:
       - uses: actions/checkout@v4

@@ -189,6 +189,7 @@ test.describe.serial("Scientific workbench", () => {
     await page.screenshot({
       path: `${evidence}/${profile}-model.png`,
       fullPage: true,
+      scale: "css",
     });
     const response = await page.request.get(
       `/api/artifacts/${run}/models/bkt/replay?learner_id=demo-000&offset=0`,
