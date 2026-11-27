@@ -22,7 +22,7 @@ jobs:
       - run: make bootstrap
       - run: make acceptance
       - run: make verify
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: campaign-reports
